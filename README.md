@@ -8,9 +8,9 @@ A mini project management software where users can define projects, create tasks
 
 | Member | SRN | Role |
 |---|---|---|
-| Srinidhi P | PES1UG24AM395 | Repository & process owner |
+| Srinidhi P | PES1UG24AM407 | Repository & process owner |
 | Sanjana V Shastry | PES1UG24AM916 | Backlog creator |
-| Sakshi P Shetty | PES1UG24AM407 | Estimation & sprint planner |
+| Sakshi P Shetty | PES1UG24AM395 | Estimation & sprint planner |
 
 ## Key features (from the SRS)
 
