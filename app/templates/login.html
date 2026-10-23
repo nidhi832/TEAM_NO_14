@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Log in - MPMS{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-5">
+    <h2 class="mb-3">Log in</h2>
+    <form method="post">
+      <div class="mb-3">
+        <label class="form-label" for="email">Email</label>
+        <input class="form-control" id="email" name="email" type="email"
+               value="{{ email or '' }}" required>
+      </div>
+      <div class="mb-3">
+        <label class="form-label" for="password">Password</label>
+        <input class="form-control" id="password" name="password"
+               type="password" required>
+      </div>
+      <button class="btn btn-primary" type="submit">Log in</button>
+      <a class="ms-2" href="{{ url_for('auth.register') }}">Create an account</a>
+    </form>
+  </div>
+</div>
+{% endblock %}
