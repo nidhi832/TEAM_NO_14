@@ -11,9 +11,26 @@
   <nav class="navbar navbar-dark bg-dark mb-4">
     <div class="container">
       <a class="navbar-brand" href="/">Mini Project Management Software</a>
+      <div class="text-white">
+        {% if session.get("user_id") %}
+          {{ session["user_name"] }} ({{ session["role"] }})
+          <a class="btn btn-sm btn-outline-light ms-2"
+             href="{{ url_for('auth.logout') }}">Log out</a>
+        {% else %}
+          <a class="btn btn-sm btn-outline-light"
+             href="{{ url_for('auth.login') }}">Log in</a>
+          <a class="btn btn-sm btn-light ms-1"
+             href="{{ url_for('auth.register') }}">Register</a>
+        {% endif %}
+      </div>
     </div>
   </nav>
   <main class="container">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for category, message in messages %}
+        <div class="alert alert-{{ category }}">{{ message }}</div>
+      {% endfor %}
+    {% endwith %}
     {% block content %}{% endblock %}
   </main>
 </body>
