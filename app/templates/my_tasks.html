@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% from "_tasks.html" import task_table with context %}
+{% block title %}My Tasks - MPMS{% endblock %}
+{% block content %}
+<h1 class="h3 mb-3">My Tasks</h1>
+<p class="text-muted">Sorted by due date.</p>
+{{ task_table(tasks, overdue_ids, statuses, url_for('tasks.my_tasks'), show_project=True) }}
+{% endblock %}

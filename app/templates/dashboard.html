@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Dashboard - MPMS{% endblock %}
+{% block content %}
+<h1 class="h3 mb-3">Dashboard</h1>
+{% for s in summaries %}
+<div class="card mb-3"><div class="card-body">
+  <div class="d-flex justify-content-between">
+    <h2 class="h5"><a href="{{ url_for('projects.show_project', project_id=s.project.id) }}">{{ s.project.name }}</a></h2>
+    <strong>{{ s.percent }}% complete</strong>
+  </div>
+  <div class="progress mb-2" style="height: 20px;"><div class="progress-bar" style="width: {{ s.percent }}%"></div></div>
+  <div class="d-flex flex-wrap gap-2">
+    {% for st in statuses %}<span class="badge bg-secondary">{{ st }}: {{ s.counts[st] }}</span>{% endfor %}
+    <span class="badge {{ 'bg-danger' if s.overdue else 'bg-light text-dark' }}">Overdue: {{ s.overdue }}</span>
+    <span class="text-muted small">{{ s.total }} tasks in total</span>
+  </div>
+</div></div>
+{% else %}
+<p class="text-muted">No projects yet. {% if current_user.role in ('PM', 'Admin') %}<a href="{{ url_for('projects.new_project') }}">Create one</a>.{% endif %}</p>
+{% endfor %}
+{% endblock %}

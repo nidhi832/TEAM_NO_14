@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Projects - MPMS{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h1 class="h3 m-0">Projects</h1>
+  {% if current_user.role in ('PM', 'Admin') %}
+  <a class="btn btn-primary" href="{{ url_for('projects.new_project') }}">New project</a>
+  {% endif %}
+</div>
+{% if projects %}
+<div class="list-group">
+  {% for p in projects %}
+  <a class="list-group-item list-group-item-action" href="{{ url_for('projects.show_project', project_id=p.id) }}">
+    <strong>{{ p.name }}</strong>
+    <span class="text-muted ms-2">{{ p.start_date or '' }} {{ '- ' ~ p.end_date if p.end_date }}</span>
+    <span class="badge bg-secondary float-end">{{ p.tasks|length }} tasks</span>
+  </a>
+  {% endfor %}
+</div>
+{% else %}
+<p class="text-muted">You are not part of any project yet.</p>
+{% endif %}
+{% endblock %}

@@ -1,5 +1,13 @@
 {% extends "base.html" %}
 {% block content %}
 <h1>Welcome to MPMS</h1>
-<p>Team 14 - project skeleton is running.</p>
+{% if session.get("user_id") %}
+  <p>Go to your <a href="{{ url_for('dashboard.home') }}">dashboard</a>,
+     your <a href="{{ url_for('projects.list_projects') }}">projects</a> or
+     <a href="{{ url_for('tasks.my_tasks') }}">My Tasks</a>.</p>
+{% else %}
+  <p>Plan projects, assign tasks and track progress.
+     <a href="{{ url_for('auth.login') }}">Log in</a> or
+     <a href="{{ url_for('auth.register') }}">register</a> to start.</p>
+{% endif %}
 {% endblock %}

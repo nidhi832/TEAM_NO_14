@@ -1,0 +1,50 @@
+{# Shared task table. Needs: tasks, overdue_ids, statuses, next_url, members (optional), can_manage #}
+{% macro task_table(tasks, overdue_ids, statuses, next_url, show_project=False, members=None, can_manage=False) %}
+<div class="table-responsive">
+<table class="table table-sm align-middle">
+  <thead><tr>
+    <th>Title</th>{% if show_project %}<th>Project</th>{% endif %}
+    <th>Priority</th><th>Due</th><th>Assignee</th><th>Status</th>
+  </tr></thead>
+  <tbody>
+  {% for t in tasks %}
+    <tr class="{{ 'table-danger' if t.id in overdue_ids }}">
+      <td>{{ t.title }}
+        {% if t.id in overdue_ids %}<span class="badge bg-danger">Overdue</span>{% endif %}
+      </td>
+      {% if show_project %}<td>{{ t.project.name }}</td>{% endif %}
+      <td>{{ t.priority }}</td>
+      <td>{{ t.due_date or '-' }}</td>
+      <td>
+        {% if can_manage and members is not none %}
+        <form method="post" action="{{ url_for('tasks.assign_task', task_id=t.id) }}" class="d-flex gap-1">
+          <input type="hidden" name="next" value="{{ next_url }}">
+          <select name="assignee_id" class="form-select form-select-sm">
+            <option value="">Unassigned</option>
+            {% for m in members %}
+            <option value="{{ m.id }}" {{ 'selected' if t.assignee_id == m.id }}>{{ m.name }}</option>
+            {% endfor %}
+          </select>
+          <button class="btn btn-sm btn-outline-secondary" type="submit">Assign</button>
+        </form>
+        {% else %}{{ t.assignee.name if t.assignee else 'Unassigned' }}{% endif %}
+      </td>
+      <td>
+        {% if can_manage or t.assignee_id == session.get('user_id') %}
+        <form method="post" action="{{ url_for('tasks.update_status', task_id=t.id) }}" class="d-flex gap-1">
+          <input type="hidden" name="next" value="{{ next_url }}">
+          <select name="status" class="form-select form-select-sm">
+            {% for s in statuses %}<option value="{{ s }}" {{ 'selected' if t.status == s }}>{{ s }}</option>{% endfor %}
+          </select>
+          <button class="btn btn-sm btn-outline-primary" type="submit">Update</button>
+        </form>
+        {% else %}{{ t.status }}{% endif %}
+      </td>
+    </tr>
+  {% else %}
+    <tr><td colspan="6" class="text-muted">No tasks yet.</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+{% endmacro %}
