@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% from "_tasks.html" import task_table with context %}
+{% block title %}{{ project.name }} - MPMS{% endblock %}
+{% block content %}
+<h1 class="h3">{{ project.name }}</h1>
+<p class="text-muted">{{ project.description }}<br>
+  Owner: {{ project.owner.name }} | {{ project.start_date or '?' }} to {{ project.end_date or '?' }}</p>
+
+<div class="progress mb-1" style="height: 22px;">
+  <div class="progress-bar" style="width: {{ summary.percent }}%">{{ summary.percent }}%</div>
+</div>
+<p class="small text-muted">{{ summary.total }} tasks - {% for s in statuses %}{{ s }}: {{ summary.counts[s] }}{{ ' | ' if not loop.last }}{% endfor %}
+  {% if summary.overdue %} | <span class="text-danger">{{ summary.overdue }} overdue</span>{% endif %}</p>
+
+<h2 class="h5 mt-4">Tasks</h2>
+{{ task_table(tasks, overdue_ids, statuses, url_for('projects.show_project', project_id=project.id), members=project.members, can_manage=can_manage) }}
+
+{% if can_manage %}
+<h2 class="h5 mt-4">Add a task</h2>
+<form method="post" action="{{ url_for('tasks.create_task', project_id=project.id) }}" class="row g-2 mb-4">
+  <div class="col-md-4"><input class="form-control" name="title" placeholder="Title" required></div>
+  <div class="col-md-3"><input class="form-control" name="description" placeholder="Description"></div>
+  <div class="col-md-2"><select class="form-select" name="priority">
+    {% for p in priorities %}<option {{ 'selected' if p == 'Medium' }}>{{ p }}</option>{% endfor %}</select></div>
+  <div class="col-md-3"><input class="form-control" name="due_date" type="date"></div>
+  <div class="col-md-4"><select class="form-select" name="assignee_id">
+    <option value="">Unassigned</option>
+    {% for m in project.members %}<option value="{{ m.id }}">{{ m.name }}</option>{% endfor %}</select></div>
+  <div class="col-md-2"><button class="btn btn-primary" type="submit">Add task</button></div>
+</form>
+{% endif %}
+
+<h2 class="h5 mt-4">Members</h2>
+<ul class="list-group mb-3">
+  {% for m in project.members %}
+  <li class="list-group-item d-flex justify-content-between align-items-center">
+    <span>{{ m.name }} <span class="text-muted">({{ m.email }}, {{ m.role }})</span>
+      {% if m.id == project.owner_id %}<span class="badge bg-dark">Owner</span>{% endif %}</span>
+    {% if can_manage and m.id != project.owner_id %}
+    <form method="post" action="{{ url_for('projects.remove_member', project_id=project.id, user_id=m.id) }}" class="m-0">
+      <button class="btn btn-sm btn-outline-danger" type="submit">Remove</button></form>
+    {% endif %}
+  </li>
+  {% endfor %}
+</ul>
+{% if can_manage %}
+<form method="post" action="{{ url_for('projects.add_member', project_id=project.id) }}" class="row g-2">
+  <div class="col-md-5"><input class="form-control" name="email" type="email" placeholder="Member email" required></div>
+  <div class="col-md-2"><button class="btn btn-outline-primary" type="submit">Add member</button></div>
+</form>
+{% endif %}
+{% endblock %}

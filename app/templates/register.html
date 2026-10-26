@@ -21,6 +21,13 @@
                type="password" required>
         <div class="form-text">At least 8 characters, with letters and digits.</div>
       </div>
+      <div class="mb-3">
+        <label class="form-label" for="role">I am a</label>
+        <select class="form-select" id="role" name="role">
+          <option value="Team Member" {{ 'selected' if role != 'PM' }}>Team Member</option>
+          <option value="PM" {{ 'selected' if role == 'PM' }}>Project Manager</option>
+        </select>
+      </div>
       <button class="btn btn-primary" type="submit">Register</button>
       <a class="ms-2" href="{{ url_for('auth.login') }}">Already have an account?</a>
     </form>

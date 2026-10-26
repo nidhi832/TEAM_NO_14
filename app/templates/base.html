@@ -11,6 +11,13 @@
   <nav class="navbar navbar-dark bg-dark mb-4">
     <div class="container">
       <a class="navbar-brand" href="/">Mini Project Management Software</a>
+      {% if session.get("user_id") %}
+      <div class="me-auto ms-3">
+        <a class="btn btn-sm btn-outline-light" href="{{ url_for('dashboard.home') }}">Dashboard</a>
+        <a class="btn btn-sm btn-outline-light" href="{{ url_for('projects.list_projects') }}">Projects</a>
+        <a class="btn btn-sm btn-outline-light" href="{{ url_for('tasks.my_tasks') }}">My Tasks</a>
+      </div>
+      {% endif %}
       <div class="text-white">
         {% if session.get("user_id") %}
           {{ session["user_name"] }} ({{ session["role"] }})

@@ -15,6 +15,9 @@ def create_app(test_config=None):
 
     db.init_app(app)
 
+    from app.security import init_security
+    init_security(app)
+
     from app import models  # noqa: F401  (registers the tables)
     from app.routes import register_blueprints
     register_blueprints(app)
