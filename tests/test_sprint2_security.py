@@ -177,3 +177,14 @@ def test_security_events_are_logged_and_shown(client):
     page = client.get("/admin/log?security=1").data
     assert b"failed login" in page and b"role changed" in page
     assert b"Admin" in page                          # who did it
+
+
+# ---------- BL-29: SQLite tuned for concurrent users ----------
+
+def test_sqlite_busy_timeout_and_wal(app, tmp_path):
+    from sqlalchemy import create_engine, text
+    import app.db_tuning  # noqa: F401
+    engine = create_engine(f"sqlite:///{tmp_path / 'x.db'}")
+    with engine.connect() as conn:
+        assert conn.execute(text("PRAGMA busy_timeout")).scalar() == 15000
+        assert conn.execute(text("PRAGMA journal_mode")).scalar() == "wal"

@@ -7,6 +7,7 @@ from app.models import User
 from app.models_session import UserSession
 
 IDLE_MINUTES = 30
+TOUCH_SECONDS = 60   # refresh last_seen at most once a minute (BL-29 speed)
 
 
 def utcnow():
@@ -26,7 +27,8 @@ def start_session(user_id, now=None):
 def check_session(token, user_id, idle_minutes=IDLE_MINUTES, now=None):
     """Return "ok", "expired", "revoked" or "inactive".
 
-    "ok" also refreshes last_seen, so only real inactivity ends the session.
+    "ok" also refreshes last_seen (at most once a minute, to save database
+    writes), so only real inactivity ends the session.
     """
     now = now or utcnow()
     record = UserSession.query.filter_by(token=token).first() if token else None
@@ -41,8 +43,9 @@ def check_session(token, user_id, idle_minutes=IDLE_MINUTES, now=None):
         record.revoked = True
         db.session.commit()
         return "inactive"
-    record.last_seen = now
-    db.session.commit()
+    if now - record.last_seen >= timedelta(seconds=TOUCH_SECONDS):
+        record.last_seen = now          # skip the DB write on most requests
+        db.session.commit()
     return "ok"
 
 
