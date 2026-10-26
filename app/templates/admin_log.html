@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Activity log - Admin{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h2>Activity log</h2>
+  <div>
+    {% if security_only %}
+      <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.activity_log') }}">Show all</a>
+    {% else %}
+      <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.activity_log', security=1) }}">Security events only</a>
+    {% endif %}
+    <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.users') }}">Users</a>
+  </div>
+</div>
+<table class="table table-sm table-striped">
+  <thead><tr><th>Time (UTC)</th><th>User</th><th>Action</th><th>Entity</th></tr></thead>
+  <tbody>
+  {% for e, user_name in entries %}
+    <tr>
+      <td>{{ e.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+      <td>{{ user_name or '-' }}</td>
+      <td>{{ e.action }}</td>
+      <td>{{ e.entity or '' }}{% if e.entity_id %} #{{ e.entity_id }}{% endif %}</td>
+    </tr>
+  {% else %}
+    <tr><td colspan="4">No entries yet.</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

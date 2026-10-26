@@ -16,6 +16,10 @@
         <a class="btn btn-sm btn-outline-light" href="{{ url_for('dashboard.home') }}">Dashboard</a>
         <a class="btn btn-sm btn-outline-light" href="{{ url_for('projects.list_projects') }}">Projects</a>
         <a class="btn btn-sm btn-outline-light" href="{{ url_for('tasks.my_tasks') }}">My Tasks</a>
+        <a class="btn btn-sm btn-outline-light" href="{{ url_for('reports.search') }}">Find tasks</a>
+        {% if session.get("role") == "Admin" %}
+        <a class="btn btn-sm btn-outline-warning" href="{{ url_for('admin.users') }}">Admin</a>
+        {% endif %}
       </div>
       {% endif %}
       <div class="text-white">

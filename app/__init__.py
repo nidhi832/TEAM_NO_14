@@ -18,9 +18,12 @@ def create_app(test_config=None):
     from app.security import init_security
     init_security(app)
 
-    from app import models  # noqa: F401  (registers the tables)
+    from app import models, models_session  # noqa: F401  (registers tables)
     from app.routes import register_blueprints
     register_blueprints(app)
+
+    from app.session_security import init_session_security
+    init_session_security(app)  # BL-09, BL-39: session token + idle timeout
 
     with app.app_context():
         db.create_all()
