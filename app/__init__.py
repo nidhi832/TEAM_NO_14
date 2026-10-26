@@ -13,6 +13,7 @@ def create_app(test_config=None):
     if test_config:
         app.config.update(test_config)
 
+    from app import db_tuning  # noqa: F401  (SQLite busy timeout + WAL, BL-29)
     db.init_app(app)
 
     from app.security import init_security
