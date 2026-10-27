@@ -1,11 +1,11 @@
-"""Tasks, allocation, My Tasks, status updates (BL-15, 19, 21, 22, 24)."""
+"""Tasks, allocation, My Tasks, status updates (BL-15, 16, 19, 21, 22, 24)."""
 from flask import (Blueprint, abort, flash, g, redirect, render_template,
                    request, url_for)
 
 from app.auth_utils import (can_manage_project, can_view_project,
                             get_project_or_403, log_event, login_required)
 from app.extensions import db
-from app.models import STATUSES, Task, User
+from app.models import PRIORITIES, STATUSES, Task, User
 from app.services import project_service, task_service
 
 bp = Blueprint("tasks", __name__)
@@ -63,6 +63,40 @@ def create_task(project_id):
         db.session.commit()
         flash("Task created.", "success")
     return redirect(url_for("projects.show_project", project_id=project.id))
+
+
+@bp.route("/tasks/<int:task_id>/edit", methods=["GET", "POST"])
+@login_required
+def edit_task(task_id):
+    """BL-16: the owner PM (or Admin) edits a task; the change is logged."""
+    task = _get_task_or_403(task_id)
+    if not can_manage_project(g.user, task.project):
+        abort(403)
+    if request.method == "POST":
+        title = request.form.get("title", "").strip()
+        priority = request.form.get("priority", "")
+        problems, due = project_service.validate_task(
+            title, priority, request.form.get("due_date"))
+        if problems:
+            for p in problems:
+                flash(p, "danger")
+            return render_template("task_edit.html", task=task,
+                                   form=request.form,
+                                   priorities=PRIORITIES), 400
+        task.title = title
+        task.description = request.form.get("description", "").strip()
+        task.priority = priority
+        task.due_date = due
+        log_event("task edited", "Task", task.id)
+        db.session.commit()
+        flash("Task updated.", "success")
+        return redirect(url_for("projects.show_project",
+                                project_id=task.project_id))
+    form = {"title": task.title, "description": task.description or "",
+            "priority": task.priority,
+            "due_date": task.due_date.isoformat() if task.due_date else ""}
+    return render_template("task_edit.html", task=task, form=form,
+                           priorities=PRIORITIES)
 
 
 @bp.route("/tasks/<int:task_id>/assign", methods=["POST"])
