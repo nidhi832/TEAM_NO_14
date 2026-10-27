@@ -2,7 +2,12 @@
 {% from "_tasks.html" import task_table with context %}
 {% block title %}{{ project.name }} - MPMS{% endblock %}
 {% block content %}
-<h1 class="h3">{{ project.name }}</h1>
+<div class="d-flex justify-content-between align-items-center">
+  <h1 class="h3">{{ project.name }}</h1>
+  {% if can_manage %}
+  <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('projects.edit_project', project_id=project.id) }}">Edit project</a>
+  {% endif %}
+</div>
 <p class="text-muted">{{ project.description }}<br>
   Owner: {{ project.owner.name }} | {{ project.start_date or '?' }} to {{ project.end_date or '?' }}</p>
 
