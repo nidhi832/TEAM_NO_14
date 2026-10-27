@@ -1,4 +1,4 @@
-"""Projects and project members (BL-10, BL-13, BL-14)."""
+"""Projects and project members (BL-10, 11, 13, 14)."""
 from flask import (Blueprint, abort, flash, g, redirect, render_template,
                    request, url_for)
 
@@ -53,6 +53,40 @@ def show_project(project_id):
         overdue_ids=overdue_ids, can_manage=can_manage_project(g.user, project),
         statuses=STATUSES, priorities=PRIORITIES,
         summary=task_service.project_summary(project))
+
+
+@bp.route("/projects/<int:project_id>/edit", methods=["GET", "POST"])
+@login_required
+def edit_project(project_id):
+    """BL-11: the owner PM (or Admin) edits name, description, dates."""
+    project = get_project_or_403(project_id)
+    if not can_manage_project(g.user, project):
+        abort(403)
+    if request.method == "POST":
+        name = request.form.get("name", "").strip()
+        description = request.form.get("description", "").strip()
+        problems, start, end = project_service.validate_project(
+            name, request.form.get("start_date"), request.form.get("end_date"))
+        if problems:
+            for p in problems:
+                flash(p, "danger")
+            return render_template("project_edit.html", project=project,
+                                   form=request.form), 400
+        project.name = name
+        project.description = description
+        project.start_date = start
+        project.end_date = end
+        log_event("project edited", "Project", project.id)
+        db.session.commit()
+        flash("Project updated.", "success")
+        return redirect(url_for("projects.show_project",
+                                project_id=project.id))
+    form = {"name": project.name, "description": project.description or "",
+            "start_date": project.start_date.isoformat()
+            if project.start_date else "",
+            "end_date": project.end_date.isoformat()
+            if project.end_date else ""}
+    return render_template("project_edit.html", project=project, form=form)
 
 
 @bp.route("/projects/<int:project_id>/members", methods=["POST"])
