@@ -7,6 +7,7 @@
   <a class="btn btn-primary" href="{{ url_for('projects.new_project') }}">New project</a>
   {% endif %}
 </div>
+<p class="small"><a href="{{ url_for('projects.list_archived') }}">Archived projects</a></p>
 {% if projects %}
 <div class="list-group">
   {% for p in projects %}
