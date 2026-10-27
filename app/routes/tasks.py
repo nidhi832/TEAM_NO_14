@@ -1,11 +1,11 @@
-"""Tasks, allocation, My Tasks, status updates (BL-15, 16, 17, 19, 21, 22, 24)."""
+"""Tasks, allocation, My Tasks, status updates (BL-15, 16, 17, 18, 19, 21, 22, 24)."""
 from flask import (Blueprint, abort, flash, g, redirect, render_template,
                    request, url_for)
 
 from app.auth_utils import (can_manage_project, can_view_project,
                             get_project_or_403, log_event, login_required)
 from app.extensions import db
-from app.models import PRIORITIES, STATUSES, Task, User
+from app.models import PRIORITIES, STATUSES, Comment, Task, User
 from app.services import audit_service, project_service, task_service
 
 bp = Blueprint("tasks", __name__)
@@ -63,6 +63,36 @@ def create_task(project_id):
         db.session.commit()
         flash("Task created.", "success")
     return redirect(url_for("projects.show_project", project_id=project.id))
+
+
+@bp.route("/tasks/<int:task_id>")
+@login_required
+def show_task(task_id):
+    """BL-18: task page with its comments (author + timestamp)."""
+    task = _get_task_or_403(task_id)
+    comments = sorted(task.comments, key=lambda c: (c.created_at, c.id))
+    return render_template("task_detail.html", task=task, comments=comments,
+                           can_manage=can_manage_project(g.user,
+                                                         task.project))
+
+
+@bp.route("/tasks/<int:task_id>/comments", methods=["POST"])
+@login_required
+def add_comment(task_id):
+    """BL-18: any member of the project can comment."""
+    task = _get_task_or_403(task_id)
+    text = request.form.get("text", "").strip()
+    problems = task_service.validate_comment(text)
+    if problems:
+        for p in problems:
+            flash(p, "danger")
+    else:
+        db.session.add(Comment(task_id=task.id, user_id=g.user.id,
+                               text=text))
+        log_event("comment added", "Task", task.id)
+        db.session.commit()
+        flash("Comment added.", "success")
+    return redirect(url_for("tasks.show_task", task_id=task.id))
 
 
 @bp.route("/tasks/<int:task_id>/edit", methods=["GET", "POST"])

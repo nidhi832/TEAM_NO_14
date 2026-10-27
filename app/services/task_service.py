@@ -1,4 +1,4 @@
-"""BUSINESS layer for tasks and progress (BL-21, BL-23, BL-24)."""
+"""BUSINESS layer for tasks and progress (BL-18, 21, 23, 24)."""
 from datetime import date
 
 from app.models import STATUSES
@@ -40,3 +40,16 @@ def project_summary(project, today=None):
         "percent": percent_complete(tasks),
         "overdue": sum(1 for t in tasks if is_overdue(t, today)),
     }
+
+
+MAX_COMMENT_LENGTH = 1000
+
+
+def validate_comment(text):
+    """BL-18: returns a list of problems (empty list = fine)."""
+    text = (text or "").strip()
+    if not text:
+        return ["Comment cannot be empty."]
+    if len(text) > MAX_COMMENT_LENGTH:
+        return [f"Comment is too long (max {MAX_COMMENT_LENGTH} characters)."]
+    return []
