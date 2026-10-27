@@ -9,10 +9,11 @@
   <tbody>
   {% for t in tasks %}
     <tr class="{{ 'table-danger' if t.id in overdue_ids }}">
-      <td>{{ t.title }}
+      <td><a href="{{ url_for('tasks.show_task', task_id=t.id) }}">{{ t.title }}</a>
         {% if t.id in overdue_ids %}<span class="badge bg-danger">Overdue</span>{% endif %}
         {% if can_manage %}
         <a class="small ms-2" href="{{ url_for('tasks.edit_task', task_id=t.id) }}">Edit</a>
+        <a class="small ms-2 text-danger" href="{{ url_for('tasks.delete_task', task_id=t.id) }}">Delete</a>
         {% endif %}
       </td>
       {% if show_project %}<td>{{ t.project.name }}</td>{% endif %}
