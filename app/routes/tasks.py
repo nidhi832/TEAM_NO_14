@@ -75,11 +75,16 @@ def assign_task(task_id):
                                       request.form.get("assignee_id", ""))
     if error:
         flash(error, "danger")
+    elif (assignee.id if assignee else None) == task.assignee_id:
+        flash("No change: the task already has that assignee.", "info")
     else:
+        old = task.assignee                    # BL-20: the user who loses it
         task.assignee_id = assignee.id if assignee else None
-        log_event("task assigned", "Task", task.id)
+        log_event(task_service.assignment_log_text(old, assignee),
+                  "Task", task.id)
         db.session.commit()
-        flash("Assignment saved.", "success")
+        flash("Task reassigned." if old and assignee else "Assignment saved.",
+              "success")
     return redirect(_safe_next(url_for("projects.show_project",
                                        project_id=task.project_id)))
 

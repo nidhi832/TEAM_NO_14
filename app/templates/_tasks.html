@@ -25,7 +25,7 @@
             <option value="{{ m.id }}" {{ 'selected' if t.assignee_id == m.id }}>{{ m.name }}</option>
             {% endfor %}
           </select>
-          <button class="btn btn-sm btn-outline-secondary" type="submit">Assign</button>
+          <button class="btn btn-sm btn-outline-secondary" type="submit">{{ 'Reassign' if t.assignee_id else 'Assign' }}</button>
         </form>
         {% else %}{{ t.assignee.name if t.assignee else 'Unassigned' }}{% endif %}
       </td>
