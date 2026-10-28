@@ -1,4 +1,4 @@
-"""Access control helpers shared by every module (BL-08, BL-14).
+"""Access control helpers shared by every module (BL-08, BL-14, BL-37).
 
 Uses the session keys set by the login route: user_id, user_name, role.
 """
