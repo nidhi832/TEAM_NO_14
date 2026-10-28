@@ -13,8 +13,11 @@ def parse_date(value):
 def validate_project(name, start_text, end_text):
     """BL-10: returns (problems, start, end). End date may not be before start."""
     problems, start, end = [], None, None
-    if not (name or "").strip():
+    name = (name or "").strip()
+    if not name:
         problems.append("Project name is required.")
+    elif len(name) > 120:
+        problems.append("Project name must be 120 characters or fewer.")
     try:
         start = parse_date(start_text)
         end = parse_date(end_text)
@@ -29,8 +32,11 @@ def validate_project(name, start_text, end_text):
 def validate_task(title, priority, due_text):
     """BL-15: returns (problems, due_date)."""
     problems, due = [], None
-    if not (title or "").strip():
+    title = (title or "").strip()
+    if not title:
         problems.append("Task title is required.")
+    elif len(title) > 150:
+        problems.append("Task title must be 150 characters or fewer.")
     if priority not in PRIORITIES:
         problems.append("Choose a valid priority.")
     try:

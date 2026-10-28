@@ -27,9 +27,13 @@ def validate_password(password):
 def validate_registration(name, email, password):
     """BL-05: returns a list of problems (empty means valid)."""
     problems = []
-    if not (name or "").strip():
+    name = (name or "").strip()
+    email = (email or "").strip()
+    if not name:
         problems.append("Name is required.")
-    if not EMAIL_RE.match((email or "").strip()):
+    elif len(name) > 100:
+        problems.append("Name must be 100 characters or fewer.")
+    if len(email) > 120 or not EMAIL_RE.match(email):
         problems.append("Enter a valid email address.")
     problems += validate_password(password)
     return problems
