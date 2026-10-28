@@ -29,8 +29,11 @@ def _member_or_none(project, user_id_text):
     """BL-19: only project members can be assignees. '' means unassigned."""
     if not user_id_text:
         return None, None
-    user = db.session.get(User, int(user_id_text)) if user_id_text.isdigit() \
+    user = (
+	db.session.get(User, int(user_id_text)) 
+	if user_id_text.isdigit() 
         else None
+    )
     if user is None or user not in project.members:
         return None, "Only project members can be assigned."
     return user, None
@@ -42,26 +45,45 @@ def create_task(project_id):
     project = get_project_or_403(project_id)
     if not can_manage_project(g.user, project):         # BL-08
         abort(403)
+
     title = request.form.get("title", "").strip()
     priority = request.form.get("priority", "Medium")
+    description = request.form.get("description", "").strip()
+
     problems, due = project_service.validate_task(
         title, priority, request.form.get("due_date"))
-    assignee, error = _member_or_none(project, request.form.get("assignee_id", ""))
+
+    # BL-38: validate task description length
+    if len(description) > 10000:
+        problems.append(
+            "Task description must be 10000 characters or fewer."
+        )
+
+    assignee, error = _member_or_none(
+        project, request.form.get("assignee_id", "")
+    )
     if error:
         problems.append(error)
+
     if problems:
         for p in problems:
             flash(p, "danger")
     else:
-        task = Task(project_id=project.id, title=title, priority=priority,
-                    description=request.form.get("description", "").strip(),
-                    due_date=due, status="To Do",
-                    assignee_id=assignee.id if assignee else None)
+        task = Task(
+            project_id=project.id,
+            title=title,
+            priority=priority,
+            description=description,
+            due_date=due,
+            status="To Do",
+            assignee_id=assignee.id if assignee else None
+        )
         db.session.add(task)
         db.session.flush()
         log_event("task created", "Task", task.id)
         db.session.commit()
         flash("Task created.", "success")
+
     return redirect(url_for("projects.show_project", project_id=project.id))
 
 
@@ -71,8 +93,10 @@ def assign_task(task_id):
     task = _get_task_or_403(task_id)
     if not can_manage_project(g.user, task.project):
         abort(403)
-    assignee, error = _member_or_none(task.project,
-                                      request.form.get("assignee_id", ""))
+
+    assignee, error = _member_or_none(
+        task.project, request.form.get("assignee_id", "")
+    )
     if error:
         flash(error, "danger")
     elif (assignee.id if assignee else None) == task.assignee_id:
@@ -85,6 +109,7 @@ def assign_task(task_id):
         db.session.commit()
         flash("Task reassigned." if old and assignee else "Assignment saved.",
               "success")
+
     return redirect(_safe_next(url_for("projects.show_project",
                                        project_id=task.project_id)))
 
@@ -104,9 +129,10 @@ def my_tasks():
 @login_required
 def update_status(task_id):
     task = _get_task_or_403(task_id)
-    if task.assignee_id != g.user.id and not can_manage_project(g.user,
-                                                                task.project):
+    if task.assignee_id != g.user.id and not can_manage_project(
+            g.user, task.project):
         abort(403)                                      # only assignee or PM
+
     status = request.form.get("status", "")
     if status not in STATUSES:
         flash("Choose a valid status.", "danger")
@@ -115,4 +141,5 @@ def update_status(task_id):
         log_event(f"task status -> {status}", "Task", task.id)
         db.session.commit()
         flash("Status updated.", "success")
+
     return redirect(_safe_next(url_for("tasks.my_tasks")))

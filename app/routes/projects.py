@@ -24,12 +24,17 @@ def new_project():
     if request.method == "POST":
         name = request.form.get("name", "").strip()
         description = request.form.get("description", "").strip()
+
+        if len(description) > 5000:
+            return "Project description must be 5000 characters or fewer.", 400
+
         problems, start, end = project_service.validate_project(
             name, request.form.get("start_date"), request.form.get("end_date"))
         if problems:
             for p in problems:
                 flash(p, "danger")
             return render_template("project_new.html", form=request.form), 400
+
         project = Project(name=name, description=description, start_date=start,
                           end_date=end, owner_id=g.user.id)
         project.members.append(g.user)                 # owner is a member too
@@ -39,13 +44,14 @@ def new_project():
         db.session.commit()
         flash("Project created.", "success")
         return redirect(url_for("projects.show_project", project_id=project.id))
+
     return render_template("project_new.html", form={})
 
 
 @bp.route("/projects/<int:project_id>")
 @login_required
 def show_project(project_id):
-    project = get_project_or_403(project_id)           # 403 for non-members
+    project = get_project_or_403(project_id)
     tasks = sorted(project.tasks, key=task_service.due_sort_key)
     overdue_ids = {t.id for t in tasks if task_service.is_overdue(t)}
     return render_template(
@@ -62,9 +68,14 @@ def edit_project(project_id):
     project = get_project_or_403(project_id)
     if not can_manage_project(g.user, project):
         abort(403)
+
     if request.method == "POST":
         name = request.form.get("name", "").strip()
         description = request.form.get("description", "").strip()
+
+        if len(description) > 5000:
+            return "Project description must be 5000 characters or fewer.", 400
+
         problems, start, end = project_service.validate_project(
             name, request.form.get("start_date"), request.form.get("end_date"))
         if problems:
@@ -72,6 +83,7 @@ def edit_project(project_id):
                 flash(p, "danger")
             return render_template("project_edit.html", project=project,
                                    form=request.form), 400
+
         project.name = name
         project.description = description
         project.start_date = start
@@ -81,6 +93,7 @@ def edit_project(project_id):
         flash("Project updated.", "success")
         return redirect(url_for("projects.show_project",
                                 project_id=project.id))
+
     form = {"name": project.name, "description": project.description or "",
             "start_date": project.start_date.isoformat()
             if project.start_date else "",
@@ -95,6 +108,7 @@ def add_member(project_id):
     project = get_project_or_403(project_id)
     if not can_manage_project(g.user, project):
         abort(403)
+
     email = request.form.get("email", "").strip().lower()
     user = User.query.filter_by(email=email).first()
     if user is None or not user.is_active:
@@ -107,6 +121,7 @@ def add_member(project_id):
         log_event("member added", "Project", project.id)
         db.session.commit()
         flash(f"{user.name} added to the project.", "success")
+
     return redirect(url_for("projects.show_project", project_id=project.id))
 
 
@@ -117,17 +132,20 @@ def remove_member(project_id, user_id):
     project = get_project_or_403(project_id)
     if not can_manage_project(g.user, project):
         abort(403)
+
     user = db.session.get(User, user_id)
     if user is None or user not in project.members:
         abort(404)
+
     if user.id == project.owner_id:
         flash("The project owner cannot be removed.", "danger")
     else:
         project.members.remove(user)
         for task in Task.query.filter_by(project_id=project.id,
                                          assignee_id=user.id):
-            task.assignee_id = None                    # they lose their tasks
+            task.assignee_id = None
         log_event("member removed", "Project", project.id)
         db.session.commit()
         flash(f"{user.name} removed from the project.", "success")
+
     return redirect(url_for("projects.show_project", project_id=project.id))
