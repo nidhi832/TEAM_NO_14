@@ -16,6 +16,23 @@ def due_sort_key(task):
     return (task.due_date is None, task.due_date or date.max, task.id)
 
 
+def _clip(text, limit=100):
+    """activity_logs.action is 100 characters long."""
+    return text if len(text) <= limit else text[:limit - 3] + "..."
+
+
+def assignment_log_text(old, new):
+    """BL-20: text for the activity log when a task changes hands.
+    old / new are users (or None for unassigned)."""
+    if old is None and new is None:
+        return "task assignment unchanged"
+    if old is None:
+        return _clip(f"task assigned to {new.name}")
+    if new is None:
+        return _clip(f"task unassigned (was {old.name})")
+    return _clip(f"task reassigned: {old.name} -> {new.name}")
+
+
 def status_counts(tasks):
     counts = {s: 0 for s in STATUSES}
     for t in tasks:
