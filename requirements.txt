@@ -4,3 +4,4 @@ Flask>=3.0
 Flask-SQLAlchemy>=3.1
 pytest>=8.0
 flake8>=7.0
+pytest-cov>=5.0

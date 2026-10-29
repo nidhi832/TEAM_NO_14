@@ -8,3 +8,6 @@ __pycache__/
 instance/
 *.db
 .pytest_cache/
+.coverage
+coverage.json
+htmlcov/

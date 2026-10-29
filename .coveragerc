@@ -1,0 +1,8 @@
+[run]
+source = app
+
+[report]
+# BL-34 / MPMS-NF-006: at least 60% of the application code is covered
+# by tests. `pytest --cov=app` fails below this number.
+fail_under = 60
+show_missing = True
