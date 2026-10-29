@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Delete task - MPMS{% endblock %}
+{% block content %}
+<div class="row justify-content-center"><div class="col-md-6">
+  <h1 class="h3 mb-3">Delete this task?</h1>
+  <div class="card mb-3"><div class="card-body">
+    <strong>{{ task.title }}</strong>
+    <div class="text-muted small">Project: {{ task.project.name }}</div>
+  </div></div>
+  <p class="text-danger">This also deletes the task's comments and cannot be undone.</p>
+  <form method="post" class="d-inline">
+    <button class="btn btn-danger" type="submit">Yes, delete task</button>
+  </form>
+  <a class="btn btn-link" href="{{ url_for('projects.show_project', project_id=task.project_id) }}">Cancel</a>
+</div></div>
+{% endblock %}

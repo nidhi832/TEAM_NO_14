@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Edit task - MPMS{% endblock %}
+{% block content %}
+<div class="row justify-content-center"><div class="col-md-6">
+  <h1 class="h3 mb-3">Edit task</h1>
+  <p class="text-muted">Project: {{ task.project.name }}</p>
+  <form method="post">
+    <div class="mb-3"><label class="form-label" for="title">Title</label>
+      <input class="form-control" id="title" name="title" value="{{ form.get('title', '') }}" required></div>
+    <div class="mb-3"><label class="form-label" for="description">Description</label>
+      <textarea class="form-control" id="description" name="description" rows="3">{{ form.get('description', '') }}</textarea></div>
+    <div class="row">
+      <div class="col mb-3"><label class="form-label" for="priority">Priority</label>
+        <select class="form-select" id="priority" name="priority">
+          {% for p in priorities %}<option value="{{ p }}" {{ 'selected' if form.get('priority') == p }}>{{ p }}</option>{% endfor %}
+        </select></div>
+      <div class="col mb-3"><label class="form-label" for="due_date">Due date</label>
+        <input class="form-control" id="due_date" name="due_date" type="date" value="{{ form.get('due_date', '') }}"></div>
+    </div>
+    <button class="btn btn-primary" type="submit">Save changes</button>
+    <a class="ms-2" href="{{ url_for('projects.show_project', project_id=task.project_id) }}">Cancel</a>
+  </form>
+</div></div>
+{% endblock %}

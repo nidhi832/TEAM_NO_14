@@ -17,11 +17,17 @@
     <tr class="{{ 'table-danger' if t.id in overdue_ids }}">
       <td>
         <div class="fw-semibold text-dark">
-          {{ t.title }}
+          <a class="text-dark text-decoration-none" href="{{ url_for('tasks.show_task', task_id=t.id) }}">{{ t.title }}</a>
           {% if t.id in overdue_ids %}<span class="badge bg-danger">Overdue</span>{% endif %}
         </div>
         {% if t.description %}
           <div class="text-muted small text-truncate" style="max-width: 320px;">{{ t.description }}</div>
+        {% endif %}
+        {% if can_manage %}
+        <div class="small mt-1">
+          <a class="text-decoration-none me-2" href="{{ url_for('tasks.edit_task', task_id=t.id) }}"><i class="bi bi-pencil me-1"></i>Edit</a>
+          <a class="text-decoration-none text-danger" href="{{ url_for('tasks.delete_task', task_id=t.id) }}"><i class="bi bi-trash me-1"></i>Delete</a>
+        </div>
         {% endif %}
       </td>
 
