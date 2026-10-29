@@ -1,4 +1,4 @@
-"""Projects and project members (BL-10, 11, 13, 14)."""
+"""Projects and project members (BL-10, 11, 12, 13, 14)."""
 from flask import (Blueprint, abort, flash, g, redirect, render_template,
                    request, url_for)
 
@@ -16,6 +16,15 @@ bp = Blueprint("projects", __name__)
 def list_projects():
     projects = visible_projects(g.user).all()          # BL-14
     return render_template("projects_list.html", projects=projects)
+
+
+@bp.route("/projects/archived")
+@login_required
+def list_archived():
+    """BL-12: archived projects stay retrievable here."""
+    projects = (visible_projects(g.user, include_archived=True)
+                .filter(Project.archived.is_(True)).all())
+    return render_template("projects_archived.html", projects=projects)
 
 
 @bp.route("/projects/new", methods=["GET", "POST"])
@@ -100,6 +109,33 @@ def edit_project(project_id):
             "end_date": project.end_date.isoformat()
             if project.end_date else ""}
     return render_template("project_edit.html", project=project, form=form)
+
+
+@bp.route("/projects/<int:project_id>/archive", methods=["POST"])
+@login_required
+def archive_project(project_id):
+    """BL-12: hide a finished project from the active list."""
+    project = get_project_or_403(project_id)
+    if not can_manage_project(g.user, project):
+        abort(403)
+    project.archived = True
+    log_event("project archived", "Project", project.id)
+    db.session.commit()
+    flash("Project archived. Find it under Archived projects.", "success")
+    return redirect(url_for("projects.list_projects"))
+
+
+@bp.route("/projects/<int:project_id>/unarchive", methods=["POST"])
+@login_required
+def unarchive_project(project_id):
+    project = get_project_or_403(project_id)
+    if not can_manage_project(g.user, project):
+        abort(403)
+    project.archived = False
+    log_event("project restored", "Project", project.id)
+    db.session.commit()
+    flash("Project restored.", "success")
+    return redirect(url_for("projects.show_project", project_id=project.id))
 
 
 @bp.route("/projects/<int:project_id>/members", methods=["POST"])
