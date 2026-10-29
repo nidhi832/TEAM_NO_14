@@ -1,48 +1,125 @@
 {# Shared task table. Needs: tasks, overdue_ids, statuses, next_url, members (optional), can_manage #}
 {% macro task_table(tasks, overdue_ids, statuses, next_url, show_project=False, members=None, can_manage=False) %}
-<div class="table-responsive">
-<table class="table table-sm align-middle">
-  <thead><tr>
-    <th>Title</th>{% if show_project %}<th>Project</th>{% endif %}
-    <th>Priority</th><th>Due</th><th>Assignee</th><th>Status</th>
-  </tr></thead>
+<div class="table-responsive card border shadow-sm overflow-hidden mb-3">
+<table class="table table-hover align-middle mb-0">
+  <thead class="table-light">
+    <tr>
+      <th style="min-width: 220px;"><i class="bi bi-card-heading me-1 text-muted"></i> Title</th>
+      {% if show_project %}<th style="min-width: 140px;"><i class="bi bi-folder2 me-1 text-muted"></i> Project</th>{% endif %}
+      <th style="min-width: 100px;"><i class="bi bi-flag me-1 text-muted"></i> Priority</th>
+      <th style="min-width: 120px;"><i class="bi bi-calendar-event me-1 text-muted"></i> Due Date</th>
+      <th style="min-width: 180px;"><i class="bi bi-person me-1 text-muted"></i> Assignee</th>
+      <th style="min-width: 180px;"><i class="bi bi-check2-circle me-1 text-muted"></i> Status</th>
+    </tr>
+  </thead>
   <tbody>
   {% for t in tasks %}
     <tr class="{{ 'table-danger' if t.id in overdue_ids }}">
-      <td>{{ t.title }}
-        {% if t.id in overdue_ids %}<span class="badge bg-danger">Overdue</span>{% endif %}
+      <td>
+        <div class="fw-semibold text-dark">
+          {{ t.title }}
+          {% if t.id in overdue_ids %}<span class="badge bg-danger">Overdue</span>{% endif %}
+        </div>
+        {% if t.description %}
+          <div class="text-muted small text-truncate" style="max-width: 320px;">{{ t.description }}</div>
+        {% endif %}
       </td>
-      {% if show_project %}<td>{{ t.project.name }}</td>{% endif %}
-      <td>{{ t.priority }}</td>
-      <td>{{ t.due_date or '-' }}</td>
+
+      {% if show_project %}
+      <td>
+        <a class="text-decoration-none fw-medium text-primary" href="{{ url_for('projects.show_project', project_id=t.project.id) }}">
+          <i class="bi bi-folder2 me-1"></i>{{ t.project.name }}
+        </a>
+      </td>
+      {% endif %}
+
+      <td>
+        {% if t.priority == 'High' %}
+          <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-1">
+            <i class="bi bi-arrow-up-circle-fill me-1"></i>High
+          </span>
+        {% elif t.priority == 'Medium' %}
+          <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle px-2 py-1">
+            <i class="bi bi-dash-circle-fill me-1"></i>Medium
+          </span>
+        {% else %}
+          <span class="badge bg-info-subtle text-info-emphasis border border-info-subtle px-2 py-1">
+            <i class="bi bi-arrow-down-circle-fill me-1"></i>Low
+          </span>
+        {% endif %}
+      </td>
+
+      <td>
+        {% if t.due_date %}
+          <span class="small {{ 'text-danger fw-bold' if t.id in overdue_ids else 'text-secondary' }}">
+            <i class="bi bi-clock me-1"></i>{{ t.due_date }}
+          </span>
+        {% else %}
+          <span class="text-muted small">-</span>
+        {% endif %}
+      </td>
+
       <td>
         {% if can_manage and members is not none %}
-        <form method="post" action="{{ url_for('tasks.assign_task', task_id=t.id) }}" class="d-flex gap-1">
+        <form method="post" action="{{ url_for('tasks.assign_task', task_id=t.id) }}" class="d-flex gap-1 align-items-center">
           <input type="hidden" name="next" value="{{ next_url }}">
-          <select name="assignee_id" class="form-select form-select-sm">
+          <select name="assignee_id" class="form-select form-select-sm" style="max-width: 150px;">
             <option value="">Unassigned</option>
             {% for m in members %}
             <option value="{{ m.id }}" {{ 'selected' if t.assignee_id == m.id }}>{{ m.name }}</option>
             {% endfor %}
           </select>
-          <button class="btn btn-sm btn-outline-secondary" type="submit">{{ 'Reassign' if t.assignee_id else 'Assign' }}</button>
+          <button class="btn btn-sm btn-outline-secondary py-1 px-2" type="submit">
+            {{ 'Reassign' if t.assignee_id else 'Assign' }}
+          </button>
         </form>
-        {% else %}{{ t.assignee.name if t.assignee else 'Unassigned' }}{% endif %}
+        {% else %}
+          {% if t.assignee %}
+            <div class="d-flex align-items-center gap-1">
+              <span class="zp-avatar" style="width: 22px; height: 22px; font-size: 0.65rem;">{{ t.assignee.name[:1] }}</span>
+              <span class="small fw-medium">{{ t.assignee.name }}</span>
+            </div>
+          {% else %}
+            <span class="text-muted small fst-italic">Unassigned</span>
+          {% endif %}
+        {% endif %}
       </td>
+
       <td>
         {% if can_manage or t.assignee_id == session.get('user_id') %}
-        <form method="post" action="{{ url_for('tasks.update_status', task_id=t.id) }}" class="d-flex gap-1">
+        <form method="post" action="{{ url_for('tasks.update_status', task_id=t.id) }}" class="d-flex gap-1 align-items-center">
           <input type="hidden" name="next" value="{{ next_url }}">
-          <select name="status" class="form-select form-select-sm">
-            {% for s in statuses %}<option value="{{ s }}" {{ 'selected' if t.status == s }}>{{ s }}</option>{% endfor %}
+          <select name="status" class="form-select form-select-sm" style="max-width: 140px;">
+            {% for s in statuses %}
+            <option value="{{ s }}" {{ 'selected' if t.status == s }}>{{ s }}</option>
+            {% endfor %}
           </select>
-          <button class="btn btn-sm btn-outline-primary" type="submit">Update</button>
+          <button class="btn btn-sm btn-outline-primary py-1 px-2" type="submit">Update</button>
         </form>
-        {% else %}{{ t.status }}{% endif %}
+        {% else %}
+          {% if t.status == 'Done' %}
+            <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1">
+              <i class="bi bi-check2 me-1"></i>Done
+            </span>
+          {% elif t.status == 'In Progress' %}
+            <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle px-2 py-1">
+              <i class="bi bi-arrow-repeat me-1"></i>In Progress
+            </span>
+          {% else %}
+            <span class="badge bg-secondary-subtle text-secondary border px-2 py-1">
+              <i class="bi bi-circle me-1"></i>To Do
+            </span>
+          {% endif %}
+        {% endif %}
       </td>
     </tr>
   {% else %}
-    <tr><td colspan="6" class="text-muted">No tasks yet.</td></tr>
+    <tr>
+      <td colspan="{{ 7 if show_project else 6 }}" class="text-center py-4 text-muted">
+        <i class="bi bi-inbox fs-3 d-block mb-1 text-secondary"></i>
+        <span>No tasks yet.</span>
+      </td>
+    </tr>
   {% endfor %}
   </tbody>
 </table>

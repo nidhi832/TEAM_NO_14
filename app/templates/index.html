@@ -1,13 +1,406 @@
 {% extends "base.html" %}
+{% block title %}MPMS - Leading Project Management Software{% endblock %}
+
+{% block page_hero %}
+  <!-- Hero Section with Floating Cards -->
+  <div class="zp-hero-stage-outer" id="overview">
+    <div class="zp-hero-stage-inner">
+
+      <!-- Central Hero Content Block -->
+      <div class="zp-hero-center-box zp-reveal">
+        <h1 class="zp-hero-main-title">
+          Project management<br>
+          software built for<br>
+          <span class="zp-gradient-text">improved collaboration</span>
+        </h1>
+
+        <div class="zp-hero-checklist">
+          <div class="zp-check-bullet">
+            <i class="bi bi-check-circle"></i>
+            <span>Plan your projects</span>
+          </div>
+          <div class="zp-check-bullet">
+            <i class="bi bi-check-circle"></i>
+            <span>Track work efficiently</span>
+          </div>
+          <div class="zp-check-bullet">
+            <i class="bi bi-check-circle"></i>
+            <span>Collaborate with team members</span>
+          </div>
+        </div>
+
+        <div class="zp-hero-cta-group">
+          {% if session.get("user_id") %}
+            <a class="btn-hero-signup" href="{{ url_for('dashboard.home') }}">
+              GO TO DASHBOARD
+            </a>
+            <a class="btn-hero-demo" href="{{ url_for('projects.list_projects') }}">
+              VIEW PROJECTS
+            </a>
+          {% else %}
+            <a class="btn-hero-signup" href="{{ url_for('auth.register') }}">
+              SIGN UP NOW
+            </a>
+            <a class="btn-hero-demo" href="{{ url_for('auth.login') }}">
+              LOG IN
+            </a>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Floating Card 1: Project Manager with Status Report (Top-Left) -->
+      <div class="zp-floating-cluster top-left d-none d-xl-block">
+        <div class="zp-category-pill pm">
+          <span class="fs-6">👑</span>
+          <div class="zp-pill-avatar" style="background: #9333ea;">P</div>
+          <span>Project Manager</span>
+        </div>
+        <div class="zp-hero-card">
+          <div class="zp-card-label">Team project status report</div>
+          <div class="d-flex align-items-center gap-3">
+            <!-- Authentic SVG Donut Chart -->
+            <svg width="76" height="76" viewBox="0 0 42 42">
+              <circle cx="21" cy="21" r="15.915" fill="transparent" stroke="#f1f5f9" stroke-width="6"/>
+              <circle cx="21" cy="21" r="15.915" fill="transparent" stroke="#f59e0b" stroke-width="6" stroke-dasharray="35 65" stroke-dashoffset="25"/>
+              <circle cx="21" cy="21" r="15.915" fill="transparent" stroke="#0052cc" stroke-width="6" stroke-dasharray="25 75" stroke-dashoffset="90"/>
+              <circle cx="21" cy="21" r="15.915" fill="transparent" stroke="#10b981" stroke-width="6" stroke-dasharray="20 80" stroke-dashoffset="65"/>
+              <circle cx="21" cy="21" r="15.915" fill="transparent" stroke="#ef4444" stroke-width="6" stroke-dasharray="10 90" stroke-dashoffset="45"/>
+            </svg>
+            <div style="font-size: 0.725rem; line-height: 1.45; font-weight: 500;">
+              <div><span class="d-inline-block rounded-1 me-1" style="width:8px;height:8px;background:#f59e0b;"></span> Active (35%)</div>
+              <div><span class="d-inline-block rounded-1 me-1" style="width:8px;height:8px;background:#0052cc;"></span> Completed (25%)</div>
+              <div><span class="d-inline-block rounded-1 me-1" style="width:8px;height:8px;background:#06b6d4;"></span> In Progress (20%)</div>
+              <div><span class="d-inline-block rounded-1 me-1" style="width:8px;height:8px;background:#ef4444;"></span> Overdue (10%)</div>
+              <div><span class="d-inline-block rounded-1 me-1" style="width:8px;height:8px;background:#10b981;"></span> To Do (10%)</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Floating Card 2: Task Progress Ring (Right-Center) -->
+      <div class="zp-floating-cluster right-center d-none d-xl-block">
+        <div class="zp-category-pill design">
+          <div class="zp-pill-avatar" style="background: #ea580c;">D</div>
+          <span>Sprint Planning</span>
+        </div>
+        <div class="zp-hero-card">
+          <div class="zp-card-label">Task progress</div>
+          <div class="d-flex align-items-center gap-3">
+            <!-- 21% Circular Progress Meter -->
+            <svg width="60" height="60" viewBox="0 0 36 36">
+              <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                    fill="none" stroke="#f1f5f9" stroke-width="3.5"/>
+              <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                    fill="none" stroke="#0052cc" stroke-width="3.5" stroke-dasharray="21, 100"/>
+              <text x="18" y="20.5" fill="#0c192c" font-size="8.5" font-weight="bold" text-anchor="middle">21%</text>
+            </svg>
+            <div>
+              <div class="fw-bold text-dark small">Sprint 2 Release</div>
+              <div class="text-muted" style="font-size: 0.68rem;">19/10/2026 to 30/10/2026</div>
+              <div class="text-danger fw-bold" style="font-size: 0.7rem;">01 task(s) overdue</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Floating Card 3: App Task Reassignment & Discussion (Bottom-Left) -->
+      <div class="zp-floating-cluster bottom-left d-none d-xl-block">
+        <div class="zp-category-pill dev">
+          <div class="zp-pill-avatar" style="background: #16a34a;">D</div>
+          <span>Team Collaboration</span>
+        </div>
+        <div class="zp-hero-card" style="max-width: 280px;">
+          <div class="d-flex align-items-center gap-2 mb-2">
+            <span class="badge bg-primary text-white p-1 rounded-circle" style="font-size: 0.65rem;"><i class="bi bi-check2-circle"></i></span>
+            <span class="fw-bold text-dark small">Task assignment</span>
+            <span class="text-muted ms-auto" style="font-size: 0.65rem;">Active</span>
+          </div>
+          <div class="bg-light p-2 rounded-3 mb-2 small" style="font-size: 0.75rem;">
+            <div class="text-muted" style="font-size: 0.65rem;">Activity Log</div>
+            Task reassigned to <strong>Team Member</strong>
+          </div>
+          <div class="bg-light p-2 rounded-3 small" style="font-size: 0.75rem;">
+            <div class="text-muted" style="font-size: 0.65rem;">Status Update</div>
+            Status updated to <span class="badge bg-success-subtle text-success border">Done</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Floating Card 4: Audit & Security (Bottom-Right) -->
+      <div class="zp-floating-cluster bottom-right d-none d-xl-block">
+        <div class="zp-category-pill review">
+          <div class="zp-pill-avatar" style="background: #2563eb;">A</div>
+          <span>Admin Audit</span>
+        </div>
+      </div>
+
+      <!-- Tablet & Mobile Cards Flow -->
+      <div class="zp-mobile-cards-grid d-xl-none">
+        <div class="zp-hero-card">
+          <div class="zp-category-pill pm mb-2"><span>👑</span> Project Manager</div>
+          <div class="zp-card-label">Team project status report</div>
+          <div class="d-flex align-items-center gap-3">
+            <svg width="60" height="60" viewBox="0 0 42 42">
+              <circle cx="21" cy="21" r="15.915" fill="transparent" stroke="#f1f5f9" stroke-width="6"/>
+              <circle cx="21" cy="21" r="15.915" fill="transparent" stroke="#f59e0b" stroke-width="6" stroke-dasharray="35 65" stroke-dashoffset="25"/>
+              <circle cx="21" cy="21" r="15.915" fill="transparent" stroke="#0052cc" stroke-width="6" stroke-dasharray="25 75" stroke-dashoffset="90"/>
+              <circle cx="21" cy="21" r="15.915" fill="transparent" stroke="#10b981" stroke-width="6" stroke-dasharray="20 80" stroke-dashoffset="65"/>
+              <circle cx="21" cy="21" r="15.915" fill="transparent" stroke="#ef4444" stroke-width="6" stroke-dasharray="10 90" stroke-dashoffset="45"/>
+            </svg>
+            <div class="small">
+              <div><span class="d-inline-block rounded-1 me-1" style="width:6px;height:6px;background:#f59e0b;"></span> Active (35%)</div>
+              <div><span class="d-inline-block rounded-1 me-1" style="width:6px;height:6px;background:#0052cc;"></span> Completed (25%)</div>
+              <div><span class="d-inline-block rounded-1 me-1" style="width:6px;height:6px;background:#10b981;"></span> In Progress (20%)</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="zp-hero-card">
+          <div class="zp-category-pill design mb-2">Sprint 2</div>
+          <div class="zp-card-label">Task progress (21%)</div>
+          <div class="small text-muted">Completion velocity &bull; Real-time tracking</div>
+        </div>
+      </div>
+
+      <!-- Center Project Review Endorsement -->
+      <div class="zp-forbes-endorsement zp-reveal">
+        <div class="zp-forbes-title-row">
+          <span style="font-size: 1.75rem; color: #d97706;">🌿</span>
+          <div class="zp-forbes-wordmark">MPMS</div>
+          <span style="font-size: 1.75rem; color: #d97706; transform: scaleX(-1); display: inline-block;">🌿</span>
+        </div>
+        <p class="zp-forbes-quote-text">
+          &ldquo;A complete project management software to define projects, allocate tasks to team members and track progress.&rdquo;
+        </p>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Section 2: Sprint & Timeline Tracking (Screenshot 2 Style) -->
+  <section class="zp-showcase-section" id="sprints">
+    <div class="container" style="max-width: 1360px;">
+      <div class="row align-items-center g-5">
+        
+        <!-- Left Copy Column -->
+        <div class="col-lg-5 zp-reveal">
+          <h2 class="zp-section-title">See the big picture<br>with Sprint timelines</h2>
+          <p class="zp-section-lead">
+            Plan project milestones, define sprint start and end dates, and allocate tasks across team members. MPMS automatically calculates your percent complete and instantly highlights overdue tasks so you never miss a deadline.
+          </p>
+          <a class="zp-action-link" href="{{ url_for('auth.register') }}">
+            <span>Get started with Sprint tracking</span>
+            <i class="bi bi-arrow-right-circle-fill"></i>
+          </a>
+        </div>
+
+        <!-- Right App UI Mockup Column -->
+        <div class="col-lg-7 zp-reveal">
+          <div class="zp-app-mockup-window">
+            
+            <!-- Topbar of App Mockup -->
+            <div class="zp-mockup-nav-top">
+              <div class="d-flex align-items-center gap-2">
+                <span class="badge bg-secondary-subtle text-secondary border">PR-001</span>
+                <span class="fw-bold text-dark">Alpha Sprint Workspace</span>
+                <i class="bi bi-info-circle text-muted small"></i>
+              </div>
+              <div class="d-flex align-items-center gap-2">
+                <span class="badge bg-light text-dark border">Sprint 1</span>
+                <span class="badge bg-light text-dark border">Sprint 2</span>
+                <i class="bi bi-person-circle fs-5 text-muted"></i>
+              </div>
+            </div>
+
+            <!-- Tabs Row -->
+            <div class="px-3 pt-2 border-bottom bg-white d-flex align-items-center justify-content-between">
+              <div class="zp-mockup-tabs-bar">
+                <span class="zp-mockup-tab-item">Dashboard</span>
+                <span class="zp-mockup-tab-item active text-primary">
+                  <span class="d-inline-block border border-primary px-2 py-0 rounded-pill">Tasks</span>
+                </span>
+                <span class="zp-mockup-tab-item">Members</span>
+                <span class="zp-mockup-tab-item">Reports</span>
+              </div>
+            </div>
+
+            <!-- Mockup Body -->
+            <div class="row g-0">
+              <!-- Left Dark Navy Sidebar -->
+              <div class="col-sm-3 zp-mockup-sidebar d-none d-sm-block">
+                <div class="fw-bold text-white mb-3 d-flex align-items-center gap-2">
+                  <div class="zp-logo-boxes" style="width:16px;height:16px;">
+                    <div class="zp-logo-box r"></div>
+                    <div class="zp-logo-box g"></div>
+                    <div class="zp-logo-box b"></div>
+                    <div class="zp-logo-box y"></div>
+                  </div>
+                  <span>MPMS</span>
+                </div>
+                <div class="zp-mockup-side-item"><i class="bi bi-grid-1x2"></i> Dashboard</div>
+                <div class="zp-mockup-side-item active"><i class="bi bi-folder2-open"></i> Projects</div>
+                <div class="zp-mockup-side-item"><i class="bi bi-check2-circle"></i> My Tasks</div>
+                <div class="zp-mockup-side-item"><i class="bi bi-search"></i> Find tasks</div>
+
+                <div class="mt-4 pt-2 border-top border-secondary text-white-50" style="font-size: 0.7rem; font-weight: 700;">
+                  MODULES
+                </div>
+                <div class="zp-mockup-side-item active"><i class="bi bi-list-task"></i> Tasks Backlog</div>
+                <div class="zp-mockup-side-item"><i class="bi bi-people"></i> Team Members</div>
+                <div class="zp-mockup-side-item"><i class="bi bi-file-earmark-spreadsheet"></i> CSV Reports</div>
+              </div>
+
+              <!-- Main Gantt Canvas -->
+              <div class="col zp-mockup-content">
+                <!-- Action Controls with Add Task Button -->
+                <div class="zp-mockup-controls-bar">
+                  <div class="small fw-semibold text-secondary">
+                    All Tasks Backlog
+                  </div>
+                  <div class="d-flex align-items-center gap-2">
+                    <span class="btn-add-task-blue">
+                      <i class="bi bi-plus-lg"></i> Add Task
+                    </span>
+                  </div>
+                </div>
+
+                <!-- Timeline Table Header -->
+                <div class="d-flex text-muted small pb-2 border-bottom fw-bold" style="font-size: 0.7rem;">
+                  <div style="width: 70px;">ID</div>
+                  <div style="width: 140px;">Task Title</div>
+                  <div class="flex-grow-1 text-center border-start">Sprint Timeline Progress</div>
+                </div>
+
+                <!-- Task Rows -->
+                <div class="zp-gantt-row">
+                  <div style="width: 70px; font-size: 0.75rem; color: #64748b;">#01</div>
+                  <div class="zp-gantt-col-name">Requirements &amp; Setup</div>
+                  <div class="zp-gantt-track-lane">
+                    <div class="zp-gantt-block purple" style="width: 100%;">Done (100%)</div>
+                  </div>
+                </div>
+
+                <div class="zp-gantt-row">
+                  <div style="width: 70px; font-size: 0.75rem; color: #64748b;">#02</div>
+                  <div class="zp-gantt-col-name">Authentication &amp; RBAC</div>
+                  <div class="zp-gantt-track-lane">
+                    <div class="zp-gantt-block peach" style="width: 100%;">Done (100%)</div>
+                  </div>
+                </div>
+
+                <div class="zp-gantt-row">
+                  <div style="width: 70px; font-size: 0.75rem; color: #64748b;">#03</div>
+                  <div class="zp-gantt-col-name">Project &amp; Task CRUD</div>
+                  <div class="zp-gantt-track-lane">
+                    <div class="zp-gantt-block green" style="width: 75%;">In Progress (75%)</div>
+                  </div>
+                </div>
+
+                <div class="zp-gantt-row">
+                  <div style="width: 70px; font-size: 0.75rem; color: #64748b;">#04</div>
+                  <div class="zp-gantt-col-name">Audit Logs &amp; Reports</div>
+                  <div class="zp-gantt-track-lane">
+                    <div class="zp-gantt-block blue" style="width: 50%;">In Progress (50%)</div>
+                  </div>
+                </div>
+
+                <div class="d-flex align-items-center gap-3 pt-3 small text-muted">
+                  <span class="badge bg-success-subtle text-success border">✓ Sprint Velocity: 84% Complete</span>
+                  <span class="badge bg-light text-muted border ms-auto">Sprint 2</span>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 3: Core Project Pillars (Governance, Auditing, Filtering, CSV) -->
+  <section class="zp-showcase-section alt-bg" id="governance">
+    <div class="container" style="max-width: 1360px;">
+      <div class="text-center mb-5 zp-reveal">
+        <h2 class="zp-section-title">Built for end-to-end project management</h2>
+        <p class="zp-section-lead mx-auto" style="max-width: 720px;">
+          Everything you need to plan projects, assign tasks, collaborate with team members, and track velocity from start to finish.
+        </p>
+      </div>
+
+      <!-- 4 Core Pillars Grid -->
+      <div class="zp-features-grid zp-stagger-group" id="reports">
+        <div class="zp-feature-box zp-stagger-child">
+          <div class="zp-feature-icon-circle">
+            <i class="bi bi-shield-lock-fill"></i>
+          </div>
+          <h3 class="h5 fw-bold text-dark mb-2">Role-Based Access</h3>
+          <p class="text-muted small mb-0">
+            Strict role governance dividing Project Managers, Team Members, and System Admins. Project Managers create and lead workspaces; members manage tasks.
+          </p>
+        </div>
+
+        <div class="zp-feature-box zp-stagger-child">
+          <div class="zp-feature-icon-circle">
+            <i class="bi bi-speedometer2"></i>
+          </div>
+          <h3 class="h5 fw-bold text-dark mb-2">Live Progress Dashboard</h3>
+          <p class="text-muted small mb-0">
+            Real-time percentage meters, task status counts (To Do, In Progress, Done), and instant overdue bottleneck alerts across all your projects.
+          </p>
+        </div>
+
+        <div class="zp-feature-box zp-stagger-child">
+          <div class="zp-feature-icon-circle">
+            <i class="bi bi-funnel-fill"></i>
+          </div>
+          <h3 class="h5 fw-bold text-dark mb-2">Multi-Criteria Filter</h3>
+          <p class="text-muted small mb-0">
+            Search tasks across workspaces by keyword, priority level, status, assignee, and due date to quickly find what needs attention today.
+          </p>
+        </div>
+
+        <div class="zp-feature-box zp-stagger-child">
+          <div class="zp-feature-icon-circle">
+            <i class="bi bi-file-earmark-spreadsheet-fill"></i>
+          </div>
+          <h3 class="h5 fw-bold text-dark mb-2">Instant CSV Export</h3>
+          <p class="text-muted small mb-0">
+            Project Managers can generate comprehensive CSV progress reports with task summaries, completion percentages, and overdue flags in one click.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 4: Bottom Call-To-Action Banner -->
+  <section class="py-5 text-center" style="background: var(--zp-hero-bg); border-top: 1px solid #e2e8f0;">
+    <div class="container py-4 zp-reveal" style="max-width: 800px;">
+      <h2 class="display-6 fw-bold text-dark mb-3">Ready to improve your team collaboration?</h2>
+      <p class="text-muted fs-6 mb-4">
+        Sign in to your workspace or register to start tracking projects, tasks, and deadlines today.
+      </p>
+      <div class="d-flex justify-content-center gap-3">
+        {% if session.get("user_id") %}
+          <a class="btn-hero-signup" href="{{ url_for('dashboard.home') }}">
+            GO TO DASHBOARD
+          </a>
+          <a class="btn-hero-demo" href="{{ url_for('projects.list_projects') }}">
+            VIEW PROJECTS
+          </a>
+        {% else %}
+          <a class="btn-hero-signup" href="{{ url_for('auth.register') }}">
+            SIGN UP NOW
+          </a>
+          <a class="btn-hero-demo" href="{{ url_for('auth.login') }}">
+            LOG IN
+          </a>
+        {% endif %}
+      </div>
+    </div>
+  </section>
+{% endblock %}
+
 {% block content %}
-<h1>Welcome to MPMS</h1>
-{% if session.get("user_id") %}
-  <p>Go to your <a href="{{ url_for('dashboard.home') }}">dashboard</a>,
-     your <a href="{{ url_for('projects.list_projects') }}">projects</a> or
-     <a href="{{ url_for('tasks.my_tasks') }}">My Tasks</a>.</p>
-{% else %}
-  <p>Plan projects, assign tasks and track progress.
-     <a href="{{ url_for('auth.login') }}">Log in</a> or
-     <a href="{{ url_for('auth.register') }}">register</a> to start.</p>
-{% endif %}
+<!-- Main page content container is handled in hero section above for full width presentation -->
 {% endblock %}

@@ -1,53 +1,202 @@
 {% extends "base.html" %}
 {% block title %}Find tasks - MPMS{% endblock %}
+
 {% block content %}
-<h2 class="mb-3">Find tasks</h2>
-<form method="get" class="row g-2 mb-3">
-  <div class="col-md-3"><input class="form-control" name="q" placeholder="Search title" value="{{ filters.q }}" aria-label="Search title"></div>
-  <div class="col-md-2">
-    <select class="form-select" name="project_id" aria-label="Project">
-      <option value="">All projects</option>
-      {% for p in projects %}<option value="{{ p.id }}" {% if filters.project_id == p.id %}selected{% endif %}>{{ p.name }}</option>{% endfor %}
-    </select></div>
-  <div class="col-md-2">
-    <select class="form-select" name="status" aria-label="Status">
-      <option value="">Any status</option>
-      {% for s in statuses %}<option {% if filters.status == s %}selected{% endif %}>{{ s }}</option>{% endfor %}
-    </select></div>
-  <div class="col-md-1">
-    <select class="form-select" name="priority" aria-label="Priority">
-      <option value="">Any priority</option>
-      {% for p in priorities %}<option {% if filters.priority == p %}selected{% endif %}>{{ p }}</option>{% endfor %}
-    </select></div>
-  <div class="col-md-2">
-    <select class="form-select" name="assignee_id" aria-label="Assignee">
-      <option value="">Anyone</option>
-      {% for u in assignees %}<option value="{{ u.id }}" {% if filters.assignee_id == u.id %}selected{% endif %}>{{ u.name }}</option>{% endfor %}
-    </select></div>
-  <div class="col-md-2"><input class="form-control" type="date" name="due_before" aria-label="Due on or before"
-      value="{{ filters.due_before.isoformat() if filters.due_before else '' }}" title="Due on or before"></div>
-  <div class="col-12">
-    <button class="btn btn-primary" type="submit">Filter</button>
-    <a class="btn btn-link" href="{{ url_for('reports.search') }}">Clear</a>
+<div class="zp-page-header zp-reveal">
+  <div class="d-flex align-items-center gap-3">
+    <div class="zp-header-badge cyan">
+      <i class="bi bi-search"></i>
+    </div>
+    <div>
+      <h1 class="zp-page-title mb-0">Find tasks</h1>
+      <p class="zp-page-subtitle">Filter tasks across all your accessible projects and generate reports</p>
+    </div>
   </div>
-</form>
-<p>{{ tasks|length }} task(s) found.</p>
-<table class="table table-striped">
-  <thead><tr><th>Title</th><th>Project</th><th>Assignee</th><th>Status</th><th>Priority</th><th>Due</th></tr></thead>
-  <tbody>
-  {% for t in tasks %}
-    <tr {% if is_overdue(t, today) %}class="table-danger"{% endif %}>
-      <td>{{ t.title }}</td>
-      <td>{{ t.project.name }}</td>
-      <td>{{ t.assignee.name if t.assignee else '-' }}</td>
-      <td>{{ t.status }}</td>
-      <td>{{ t.priority }}</td>
-      <td>{{ t.due_date or '-' }}{% if is_overdue(t, today) %} <span class="badge bg-danger">Overdue</span>{% endif %}</td>
-    </tr>
-  {% endfor %}
-  </tbody>
-</table>
+  {% if filters.project_id %}
+  <div>
+    <a class="btn btn-outline-success shadow-sm" href="{{ url_for('reports.project_report', project_id=filters.project_id) }}">
+      <i class="bi bi-file-earmark-spreadsheet me-1"></i> Download CSV report for this project
+    </a>
+  </div>
+  {% endif %}
+</div>
+
+<!-- Filter Bar Card -->
+<div class="card border shadow-sm mb-4 zp-reveal">
+  <div class="card-header bg-white py-3 px-4 border-bottom d-flex align-items-center justify-content-between">
+    <div class="d-flex align-items-center gap-2">
+      <i class="bi bi-funnel-fill text-primary"></i>
+      <span class="fw-bold text-dark small text-uppercase letter-spacing-1">Filter &amp; Search Criteria</span>
+    </div>
+    <span class="badge bg-light text-secondary border">Real-Time Query</span>
+  </div>
+  <div class="card-body p-4">
+    <form method="get" class="row g-3">
+      <div class="col-md-3">
+        <label class="form-label small fw-semibold">Search Title</label>
+        <div class="input-group input-group-sm">
+          <span class="input-group-text bg-light text-muted border-end-0"><i class="bi bi-search"></i></span>
+          <input class="form-control border-start-0" name="q" placeholder="Keywords in task title..." value="{{ filters.q }}" aria-label="Search title">
+        </div>
+      </div>
+
+      <div class="col-md-2 col-sm-6">
+        <label class="form-label small fw-semibold">Project</label>
+        <select class="form-select form-select-sm" name="project_id" aria-label="Project">
+          <option value="">All projects</option>
+          {% for p in projects %}
+            <option value="{{ p.id }}" {% if filters.project_id == p.id %}selected{% endif %}>{{ p.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="col-md-2 col-sm-6">
+        <label class="form-label small fw-semibold">Status</label>
+        <select class="form-select form-select-sm" name="status" aria-label="Status">
+          <option value="">Any status</option>
+          {% for s in statuses %}
+            <option {% if filters.status == s %}selected{% endif %}>{{ s }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="col-md-2 col-sm-6">
+        <label class="form-label small fw-semibold">Priority</label>
+        <select class="form-select form-select-sm" name="priority" aria-label="Priority">
+          <option value="">Any priority</option>
+          {% for p in priorities %}
+            <option {% if filters.priority == p %}selected{% endif %}>{{ p }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="col-md-3 col-sm-6">
+        <label class="form-label small fw-semibold">Assignee</label>
+        <select class="form-select form-select-sm" name="assignee_id" aria-label="Assignee">
+          <option value="">Anyone</option>
+          {% for u in assignees %}
+            <option value="{{ u.id }}" {% if filters.assignee_id == u.id %}selected{% endif %}>{{ u.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="col-md-3">
+        <label class="form-label small fw-semibold">Due on or before</label>
+        <input class="form-control form-control-sm" type="date" name="due_before" aria-label="Due on or before"
+               value="{{ filters.due_before.isoformat() if filters.due_before else '' }}" title="Due on or before">
+      </div>
+
+      <div class="col-12 pt-2 d-flex align-items-center gap-2">
+        <button class="btn btn-primary btn-sm px-4 shadow-sm fw-semibold" type="submit">
+          <i class="bi bi-funnel me-1"></i> Filter
+        </button>
+        <a class="btn btn-outline-secondary btn-sm px-3" href="{{ url_for('reports.search') }}">
+          <i class="bi bi-arrow-counterclockwise me-1"></i> Clear
+        </a>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Results Header & Counter -->
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <p class="text-muted mb-0 fw-medium">
+    <i class="bi bi-clipboard-data text-primary me-1"></i>
+    <span>{{ tasks|length }} task(s) found.</span>
+  </p>
+</div>
+
+<!-- Modern Tasks Table -->
+<div class="table-responsive card border shadow-sm overflow-hidden mb-4 zp-reveal">
+  <table class="table table-hover align-middle mb-0">
+    <thead class="table-light">
+      <tr>
+        <th style="min-width: 220px;">Title</th>
+        <th style="min-width: 140px;">Project</th>
+        <th style="min-width: 160px;">Assignee</th>
+        <th style="min-width: 120px;">Status</th>
+        <th style="min-width: 100px;">Priority</th>
+        <th style="min-width: 140px;">Due</th>
+      </tr>
+    </thead>
+    <tbody>
+    {% for t in tasks %}
+      <tr {% if is_overdue(t, today) %}class="table-danger"{% endif %}>
+        <td>
+          <div class="fw-semibold text-dark">{{ t.title }}</div>
+          {% if t.description %}
+            <div class="text-muted small text-truncate" style="max-width: 280px;">{{ t.description }}</div>
+          {% endif %}
+        </td>
+        <td>
+          <a class="text-decoration-none fw-medium text-primary" href="{{ url_for('projects.show_project', project_id=t.project.id) }}">
+            <i class="bi bi-folder2 me-1"></i>{{ t.project.name }}
+          </a>
+        </td>
+        <td>
+          {% if t.assignee %}
+            <div class="d-flex align-items-center gap-1">
+              <span class="zp-avatar" style="width: 22px; height: 22px; font-size: 0.65rem;">{{ t.assignee.name[:1] }}</span>
+              <span class="small fw-medium">{{ t.assignee.name }}</span>
+            </div>
+          {% else %}
+            <span class="text-muted small">-</span>
+          {% endif %}
+        </td>
+        <td>
+          {% if t.status == 'Done' %}
+            <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1">
+              <i class="bi bi-check2 me-1"></i>{{ t.status }}
+            </span>
+          {% elif t.status == 'In Progress' %}
+            <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle px-2 py-1">
+              <i class="bi bi-arrow-repeat me-1"></i>{{ t.status }}
+            </span>
+          {% else %}
+            <span class="badge bg-secondary-subtle text-secondary border px-2 py-1">
+              <i class="bi bi-circle me-1"></i>{{ t.status }}
+            </span>
+          {% endif %}
+        </td>
+        <td>
+          {% if t.priority == 'High' %}
+            <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-1">
+              <i class="bi bi-arrow-up-circle-fill me-1"></i>{{ t.priority }}
+            </span>
+          {% elif t.priority == 'Medium' %}
+            <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle px-2 py-1">
+              <i class="bi bi-dash-circle-fill me-1"></i>{{ t.priority }}
+            </span>
+          {% else %}
+            <span class="badge bg-info-subtle text-info-emphasis border border-info-subtle px-2 py-1">
+              <i class="bi bi-arrow-down-circle-fill me-1"></i>{{ t.priority }}
+            </span>
+          {% endif %}
+        </td>
+        <td>
+          {{ t.due_date or '-' }}{% if is_overdue(t, today) %} <span class="badge bg-danger">Overdue</span>{% endif %}
+        </td>
+      </tr>
+    {% else %}
+      <tr>
+        <td colspan="6" class="text-center py-5 text-muted">
+          <div class="mx-auto mb-2 text-muted" style="font-size: 2.5rem; opacity: 0.6;">
+            <i class="bi bi-search"></i>
+          </div>
+          <div class="fw-bold text-dark mb-1">No matching tasks found</div>
+          <div class="small">Try adjusting your filters, searching different keywords, or clearing your query.</div>
+        </td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+
 {% if filters.project_id %}
-  <a class="btn btn-outline-success" href="{{ url_for('reports.project_report', project_id=filters.project_id) }}">Download CSV report for this project</a>
+  <div class="mb-4">
+    <a class="btn btn-outline-success" href="{{ url_for('reports.project_report', project_id=filters.project_id) }}">
+      <i class="bi bi-file-earmark-spreadsheet me-1"></i> Download CSV report for this project
+    </a>
+  </div>
 {% endif %}
 {% endblock %}

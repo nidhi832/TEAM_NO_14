@@ -1,57 +1,212 @@
 {% extends "base.html" %}
 {% from "_tasks.html" import task_table with context %}
 {% block title %}{{ project.name }} - MPMS{% endblock %}
+
 {% block content %}
-<div class="d-flex justify-content-between align-items-center">
-  <h1 class="h3">{{ project.name }}</h1>
-  {% if can_manage %}
-  <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('projects.edit_project', project_id=project.id) }}">Edit project</a>
-  {% endif %}
+<!-- Project Breadcrumb & Header (Reference Image 2 Workspace View) -->
+<div class="mb-3 zp-reveal">
+  <nav aria-label="breadcrumb">
+    <ol class="breadcrumb mb-1 small">
+      <li class="breadcrumb-item"><a href="{{ url_for('projects.list_projects') }}" class="text-decoration-none">Projects</a></li>
+      <li class="breadcrumb-item active text-truncate" style="max-width: 300px;" aria-current="page">{{ project.name }}</li>
+    </ol>
+  </nav>
+  
+  <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 pb-3 border-bottom">
+    <div>
+      <div class="d-flex align-items-center gap-2">
+        <span class="badge bg-dark px-2 py-1">PR-{{ '%03d' % project.id }}</span>
+        <h1 class="h3 fw-bold mb-0 text-dark">{{ project.name }}</h1>
+      </div>
+      <p class="text-muted small mt-2 mb-0">
+        {{ project.description if project.description else 'No project description.' }}<br>
+        <span class="text-dark fw-medium">Owner: {{ project.owner.name }}</span> | 
+        <span><i class="bi bi-calendar3 me-1"></i>{{ project.start_date or '?' }} to {{ project.end_date or '?' }}</span>
+      </p>
+    </div>
+
+    <div class="d-flex flex-wrap align-items-center gap-2">
+      {% if can_manage %}
+        <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('projects.edit_project', project_id=project.id) }}">
+          <i class="bi bi-pencil me-1"></i> Edit project
+        </a>
+        <a class="btn btn-sm btn-outline-success" href="{{ url_for('reports.project_report', project_id=project.id) }}">
+          <i class="bi bi-file-earmark-spreadsheet me-1"></i> Download CSV report
+        </a>
+        <!-- Add Task Primary Button (Reference Image 2) -->
+        <a class="btn-add-task text-decoration-none" href="#add-task-section">
+          <i class="bi bi-plus-lg"></i> Add Task
+        </a>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Workspace Sub-navigation Tabs (Reference Image 2) -->
+  <div class="d-flex gap-2 mt-3 pb-2 border-bottom">
+    <a href="{{ url_for('dashboard.home') }}" class="btn btn-sm btn-light text-muted border-0 fw-semibold">
+      <i class="bi bi-grid-1x2 me-1"></i> Dashboard
+    </a>
+    <a href="{{ url_for('projects.show_project', project_id=project.id) }}" class="btn btn-sm btn-primary fw-bold shadow-sm">
+      <i class="bi bi-check2-square me-1"></i> Tasks
+    </a>
+    <a href="#members-section" class="btn btn-sm btn-light text-muted border-0 fw-semibold">
+      <i class="bi bi-people me-1"></i> Users ({{ project.members|length }})
+    </a>
+  </div>
 </div>
-<p class="text-muted">{{ project.description }}<br>
-  Owner: {{ project.owner.name }} | {{ project.start_date or '?' }} to {{ project.end_date or '?' }}</p>
 
-<div class="progress mb-1" style="height: 22px;">
-  <div class="progress-bar" style="width: {{ summary.percent }}%">{{ summary.percent }}%</div>
+<!-- Progress Velocity & Milestone Widget -->
+<div class="card border shadow-sm mb-4">
+  <div class="card-body p-4">
+    <div class="d-flex justify-content-between align-items-center mb-2">
+      <div class="d-flex align-items-center gap-2">
+        <i class="bi bi-speedometer2 text-primary fs-5"></i>
+        <span class="fw-bold text-dark">Overall Sprint Progress</span>
+      </div>
+      <span class="badge bg-primary-subtle text-primary border border-primary-subtle fs-6 px-3 py-1">
+        {{ summary.percent }}%
+      </span>
+    </div>
+
+    <div class="progress mb-2" style="height: 14px;">
+      <div class="progress-bar" style="width: {{ summary.percent }}%">{{ summary.percent }}%</div>
+    </div>
+
+    <div class="d-flex flex-wrap align-items-center justify-content-between text-muted small mt-2">
+      <div>
+        <span class="fw-semibold text-dark">{{ summary.total }} tasks</span> - 
+        {% for s in statuses %}
+          {{ s }}: {{ summary.counts[s] }}{{ ' | ' if not loop.last }}
+        {% endfor %}
+        {% if summary.overdue %} 
+          | <span class="text-danger">{{ summary.overdue }} overdue</span>
+        {% endif %}
+      </div>
+      <div class="text-muted small">
+        <i class="bi bi-people me-1"></i> {{ project.members|length }} members
+      </div>
+    </div>
+  </div>
 </div>
-<p class="small text-muted">{{ summary.total }} tasks - {% for s in statuses %}{{ s }}: {{ summary.counts[s] }}{{ ' | ' if not loop.last }}{% endfor %}
-  {% if summary.overdue %} | <span class="text-danger">{{ summary.overdue }} overdue</span>{% endif %}</p>
 
-<h2 class="h5 mt-4">Tasks</h2>
-{{ task_table(tasks, overdue_ids, statuses, url_for('projects.show_project', project_id=project.id), members=project.members, can_manage=can_manage) }}
+<div class="row g-4">
+  <!-- Left Column: Tasks Section & Add Task -->
+  <div class="col-lg-8">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h2 class="h5 fw-bold mb-0 text-dark">
+        <i class="bi bi-list-check text-primary me-1"></i> Tasks
+      </h2>
+      <span class="badge bg-secondary">{{ tasks|length }} tasks</span>
+    </div>
 
-{% if can_manage %}
-<h2 class="h5 mt-4">Add a task</h2>
-<form method="post" action="{{ url_for('tasks.create_task', project_id=project.id) }}" class="row g-2 mb-4">
-  <div class="col-md-4"><input class="form-control" name="title" placeholder="Title" required></div>
-  <div class="col-md-3"><input class="form-control" name="description" placeholder="Description"></div>
-  <div class="col-md-2"><select class="form-select" name="priority">
-    {% for p in priorities %}<option {{ 'selected' if p == 'Medium' }}>{{ p }}</option>{% endfor %}</select></div>
-  <div class="col-md-3"><input class="form-control" name="due_date" type="date"></div>
-  <div class="col-md-4"><select class="form-select" name="assignee_id">
-    <option value="">Unassigned</option>
-    {% for m in project.members %}<option value="{{ m.id }}">{{ m.name }}</option>{% endfor %}</select></div>
-  <div class="col-md-2"><button class="btn btn-primary" type="submit">Add task</button></div>
-</form>
-{% endif %}
+    <!-- Reusable Task Table Component -->
+    {{ task_table(tasks, overdue_ids, statuses, url_for('projects.show_project', project_id=project.id), members=project.members, can_manage=can_manage) }}
 
-<h2 class="h5 mt-4">Members</h2>
-<ul class="list-group mb-3">
-  {% for m in project.members %}
-  <li class="list-group-item d-flex justify-content-between align-items-center">
-    <span>{{ m.name }} <span class="text-muted">({{ m.email }}, {{ m.role }})</span>
-      {% if m.id == project.owner_id %}<span class="badge bg-dark">Owner</span>{% endif %}</span>
-    {% if can_manage and m.id != project.owner_id %}
-    <form method="post" action="{{ url_for('projects.remove_member', project_id=project.id, user_id=m.id) }}" class="m-0">
-      <button class="btn btn-sm btn-outline-danger" type="submit">Remove</button></form>
+    {% if can_manage %}
+    <!-- Add Task Card (Modal Layout) -->
+    <div class="card border shadow-sm mt-4" id="add-task-section">
+      <div class="card-header bg-white py-3 d-flex align-items-center gap-2">
+        <i class="bi bi-plus-circle-fill text-primary"></i>
+        <h2 class="h6 fw-bold mb-0 text-dark">Add a task</h2>
+      </div>
+      <div class="card-body p-4">
+        <form method="post" action="{{ url_for('tasks.create_task', project_id=project.id) }}" class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label small">Task Title <span class="text-danger">*</span></label>
+            <input class="form-control" name="title" placeholder="e.g. Design responsive navbar" required>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label small">Description</label>
+            <input class="form-control" name="description" placeholder="Brief task context or acceptance criteria">
+          </div>
+          <div class="col-sm-4">
+            <label class="form-label small">Priority</label>
+            <select class="form-select" name="priority">
+              {% for p in priorities %}
+                <option {{ 'selected' if p == 'Medium' }}>{{ p }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-sm-4">
+            <label class="form-label small">Due Date</label>
+            <input class="form-control" name="due_date" type="date">
+          </div>
+          <div class="col-sm-4">
+            <label class="form-label small">Assignee</label>
+            <select class="form-select" name="assignee_id">
+              <option value="">Unassigned</option>
+              {% for m in project.members %}
+                <option value="{{ m.id }}">{{ m.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-12 text-end pt-2">
+            <button class="btn btn-primary px-4 shadow-sm" type="submit">
+              <i class="bi bi-plus-lg me-1"></i> Add task
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
     {% endif %}
-  </li>
-  {% endfor %}
-</ul>
-{% if can_manage %}
-<form method="post" action="{{ url_for('projects.add_member', project_id=project.id) }}" class="row g-2">
-  <div class="col-md-5"><input class="form-control" name="email" type="email" placeholder="Member email" required></div>
-  <div class="col-md-2"><button class="btn btn-outline-primary" type="submit">Add member</button></div>
-</form>
-{% endif %}
+  </div>
+
+  <!-- Right Column: Project Members & Add Member -->
+  <div class="col-lg-4" id="members-section">
+    <div class="card border shadow-sm mb-4">
+      <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center border-bottom">
+        <div class="d-flex align-items-center gap-2">
+          <i class="bi bi-people-fill text-primary"></i>
+          <h2 class="h6 fw-bold mb-0 text-dark">Members</h2>
+        </div>
+        <span class="badge bg-secondary">{{ project.members|length }}</span>
+      </div>
+      <div class="card-body p-3">
+        <ul class="list-group list-group-flush mb-3">
+          {% for m in project.members %}
+          <li class="list-group-item px-1 py-2 d-flex justify-content-between align-items-center border-bottom">
+            <div class="d-flex align-items-center gap-2">
+              <span class="zp-avatar" style="width: 30px; height: 30px; font-size: 0.75rem;">
+                {{ m.name[:1] }}
+              </span>
+              <div>
+                <div class="fw-semibold text-dark small">
+                  {{ m.name }}
+                  {% if m.id == project.owner_id %}
+                    <span class="badge bg-dark ms-1">Owner</span>
+                  {% endif %}
+                </div>
+                <div class="text-muted" style="font-size: 0.75rem;">
+                  {{ m.email }} &bull; {{ m.role }}
+                </div>
+              </div>
+            </div>
+
+            {% if can_manage and m.id != project.owner_id %}
+            <form method="post" action="{{ url_for('projects.remove_member', project_id=project.id, user_id=m.id) }}" class="m-0">
+              <button class="btn btn-sm btn-outline-danger py-0 px-2" type="submit" title="Remove member"
+                      onclick="return confirm('Remove {{ m.name }} from project?');">
+                Remove
+              </button>
+            </form>
+            {% endif %}
+          </li>
+          {% endfor %}
+        </ul>
+
+        {% if can_manage %}
+        <div class="pt-2 border-top">
+          <label class="form-label small fw-semibold text-dark">Invite Team Member</label>
+          <form method="post" action="{{ url_for('projects.add_member', project_id=project.id) }}" class="d-flex gap-2">
+            <input class="form-control form-control-sm" name="email" type="email" placeholder="user@domain.com" required>
+            <button class="btn btn-sm btn-outline-primary px-3 text-nowrap" type="submit">
+              <i class="bi bi-person-plus me-1"></i> Add member
+            </button>
+          </form>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
 {% endblock %}

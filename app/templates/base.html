@@ -3,46 +3,148 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{% block title %}MPMS{% endblock %}</title>
-  <link rel="stylesheet"
-        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <title>{% block title %}MPMS - Leading Project Management Software{% endblock %}</title>
+  <!-- Google Fonts: Inter & Caveat (Handwritten annotations) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <!-- Bootstrap 5.3.3 & Bootstrap Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <!-- Custom Visual Theme -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}">
+  {% block extra_head %}{% endblock %}
 </head>
 <body>
-  <nav class="navbar navbar-dark bg-dark mb-4">
-    <div class="container">
-      <a class="navbar-brand" href="/">Mini Project Management Software</a>
-      {% if session.get("user_id") %}
-      <div class="me-auto ms-3">
-        <a class="btn btn-sm btn-outline-light" href="{{ url_for('dashboard.home') }}">Dashboard</a>
-        <a class="btn btn-sm btn-outline-light" href="{{ url_for('projects.list_projects') }}">Projects</a>
-        <a class="btn btn-sm btn-outline-light" href="{{ url_for('tasks.my_tasks') }}">My Tasks</a>
-        <a class="btn btn-sm btn-outline-light" href="{{ url_for('reports.search') }}">Find tasks</a>
-        {% if session.get("role") == "Admin" %}
-        <a class="btn btn-sm btn-outline-warning" href="{{ url_for('admin.users') }}">Admin</a>
+  <!-- Clean Zoho Projects Style Navbar (Focused Only On Actual Project Modules) -->
+  <nav class="navbar navbar-expand-lg zp-navbar">
+    <div class="container-fluid d-flex align-items-center justify-content-between">
+      <div class="d-flex align-items-center gap-4">
+        <!-- Brand Logo with 4-Color Geometric Boxes -->
+        <a class="zp-brand" href="/">
+          <div class="zp-logo-boxes">
+            <div class="zp-logo-box r"></div>
+            <div class="zp-logo-box g"></div>
+            <div class="zp-logo-box b"></div>
+            <div class="zp-logo-box y"></div>
+          </div>
+          <span>Mini Project Management Software</span>
+        </a>
+
+        <!-- Real Navigation Links -->
+        {% if session.get("user_id") %}
+        <div class="zp-nav-links d-none d-md-flex ms-3">
+          <a class="zp-nav-link {{ 'active' if request.path == url_for('dashboard.home') }}" 
+             href="{{ url_for('dashboard.home') }}">
+            <i class="bi bi-grid-1x2"></i> Dashboard
+          </a>
+          <a class="zp-nav-link {{ 'active' if request.path.startswith('/projects') and not request.path.startswith('/projects/new') }}" 
+             href="{{ url_for('projects.list_projects') }}">
+            <i class="bi bi-folder2-open"></i> Projects
+          </a>
+          <a class="zp-nav-link {{ 'active' if request.path == url_for('tasks.my_tasks') }}" 
+             href="{{ url_for('tasks.my_tasks') }}">
+            <i class="bi bi-check2-circle"></i> My Tasks
+          </a>
+          <a class="zp-nav-link {{ 'active' if request.path == url_for('reports.search') }}" 
+             href="{{ url_for('reports.search') }}">
+            <i class="bi bi-search"></i> Find tasks
+          </a>
+          {% if session.get("role") == "Admin" %}
+          <a class="zp-nav-link zp-nav-admin {{ 'active' if request.path.startswith('/admin') }}" 
+             href="{{ url_for('admin.users') }}">
+            <i class="bi bi-shield-lock"></i> Admin
+          </a>
+          {% endif %}
+        </div>
+        {% else %}
+        <div class="zp-nav-links d-none d-lg-flex ms-3">
+          <a class="zp-nav-link" href="#overview">Overview</a>
+          <a class="zp-nav-link" href="#sprints">Sprint Tracking</a>
+          <a class="zp-nav-link" href="#governance">Role Governance</a>
+          <a class="zp-nav-link" href="#reports">Reports &amp; Auditing</a>
+        </div>
         {% endif %}
       </div>
-      {% endif %}
-      <div class="text-white">
+
+      <!-- Right User Actions -->
+      <div class="d-flex align-items-center gap-3">
         {% if session.get("user_id") %}
-          {{ session["user_name"] }} ({{ session["role"] }})
-          <a class="btn btn-sm btn-outline-light ms-2"
-             href="{{ url_for('auth.logout') }}">Log out</a>
+          <div class="zp-user-badge">
+            <span class="zp-avatar">{{ session["user_name"][:1] }}</span>
+            <span class="fw-bold text-dark">{{ session["user_name"] }}</span>
+            <span class="badge bg-secondary text-secondary-emphasis" style="font-size: 0.7rem;">{{ session["role"] }}</span>
+            <a class="btn btn-sm btn-outline-secondary ms-2 py-0 px-2"
+               href="{{ url_for('auth.logout') }}">
+              <i class="bi bi-box-arrow-right"></i> Log out
+            </a>
+          </div>
         {% else %}
-          <a class="btn btn-sm btn-outline-light"
-             href="{{ url_for('auth.login') }}">Log in</a>
-          <a class="btn btn-sm btn-light ms-1"
-             href="{{ url_for('auth.register') }}">Register</a>
+          <a class="text-dark fw-bold text-decoration-none small px-2" href="{{ url_for('auth.login') }}">
+            Log in
+          </a>
+          <a class="btn-zp-red" href="{{ url_for('auth.register') }}">
+            Get Started
+          </a>
         {% endif %}
       </div>
     </div>
   </nav>
-  <main class="container">
-    {% with messages = get_flashed_messages(with_categories=true) %}
-      {% for category, message in messages %}
-        <div class="alert alert-{{ category }}">{{ message }}</div>
-      {% endfor %}
-    {% endwith %}
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="container mt-3">
+        <div class="zp-flash-container">
+          {% for category, message in messages %}
+            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+              <div>
+                {% if category == 'success' %}
+                  <i class="bi bi-check-circle-fill text-success fs-5 me-2"></i>
+                {% elif category == 'danger' %}
+                  <i class="bi bi-exclamation-octagon-fill text-danger fs-5 me-2"></i>
+                {% elif category == 'warning' %}
+                  <i class="bi bi-exclamation-triangle-fill text-warning fs-5 me-2"></i>
+                {% else %}
+                  <i class="bi bi-info-circle-fill text-primary fs-5 me-2"></i>
+                {% endif %}
+                <span>{{ message }}</span>
+              </div>
+              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  {% block page_hero %}{% endblock %}
+
+  <main class="container my-4">
     {% block content %}{% endblock %}
   </main>
+
+  <!-- Floating Action Help / Chat Bubble -->
+  <div class="zp-fab" title="Quick Actions &amp; Help">
+    <i class="bi bi-chat-dots-fill"></i>
+  </div>
+
+  <footer class="zp-footer text-center">
+    <div class="container d-flex flex-column flex-md-row justify-content-between align-items-center gap-2">
+      <div>
+        <span class="fw-bold text-dark">Mini Project Management Software (MPMS)</span>
+        &bull; Team 14 &bull; Software Engineering Mini-Project
+      </div>
+      <div>
+        <span class="badge bg-light text-secondary border me-2">Sprint 2</span>
+        <span>Role Governance &bull; Sprint Velocity &bull; Real-Time Auditing</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Bootstrap 5 Bundle JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <!-- MPMS Scroll Reveal & Micro-interaction Animations -->
+  <script src="{{ url_for('static', filename='js/animations.js') }}" defer></script>
+  {% block extra_scripts %}{% endblock %}
 </body>
 </html>

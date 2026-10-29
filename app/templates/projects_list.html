@@ -1,23 +1,114 @@
 {% extends "base.html" %}
 {% block title %}Projects - MPMS{% endblock %}
+
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-3">
-  <h1 class="h3 m-0">Projects</h1>
-  {% if current_user.role in ('PM', 'Admin') %}
-  <a class="btn btn-primary" href="{{ url_for('projects.new_project') }}">New project</a>
+<div class="zp-page-header zp-reveal">
+  <div class="d-flex align-items-center gap-3">
+    <div class="zp-header-badge purple">
+      <i class="bi bi-folder2-open"></i>
+    </div>
+    <div>
+      <h1 class="zp-page-title mb-0">Projects</h1>
+      <p class="zp-page-subtitle">All active workspaces and sprints you have access to</p>
+    </div>
+  </div>
+  {% if session.get('role') in ('PM', 'Admin') or (g.user and g.user.role in ('PM', 'Admin')) %}
+  <div>
+    <a class="btn btn-primary shadow-sm" href="{{ url_for('projects.new_project') }}">
+      <i class="bi bi-plus-lg me-1"></i> New project
+    </a>
+  </div>
   {% endif %}
 </div>
+
 {% if projects %}
-<div class="list-group">
-  {% for p in projects %}
-  <a class="list-group-item list-group-item-action" href="{{ url_for('projects.show_project', project_id=p.id) }}">
-    <strong>{{ p.name }}</strong>
-    <span class="text-muted ms-2">{{ p.start_date or '' }} {{ '- ' ~ p.end_date if p.end_date }}</span>
-    <span class="badge bg-secondary float-end">{{ p.tasks|length }} tasks</span>
-  </a>
-  {% endfor %}
-</div>
+  <div class="row g-3 zp-stagger-group">
+    {% for p in projects %}
+    <div class="col-md-6 col-lg-4">
+      <div class="card h-100 border shadow-sm zp-stagger-child">
+        <div class="card-body p-4 d-flex flex-column">
+          <div class="d-flex align-items-start justify-content-between mb-3">
+            <div class="zp-header-badge purple" style="width: 36px; height: 36px; font-size: 1.1rem; border-radius: 8px;">
+              <i class="bi bi-folder2"></i>
+            </div>
+            <span class="badge bg-secondary">
+              <i class="bi bi-check2-square me-1"></i>{{ p.tasks|length }} tasks
+            </span>
+          </div>
+
+          <h2 class="h5 fw-bold mb-1">
+            <a class="text-dark text-decoration-none hover-primary" 
+               href="{{ url_for('projects.show_project', project_id=p.id) }}">
+              <strong>{{ p.name }}</strong>
+            </a>
+          </h2>
+
+          <p class="text-muted small mb-3 flex-grow-1">
+            {{ p.description[:120] ~ '...' if p.description and p.description|length > 120 else (p.description or 'No description provided.') }}
+          </p>
+
+          <div class="pt-3 border-top mt-auto">
+            <div class="d-flex justify-content-between align-items-center text-muted small mb-2">
+              <span>
+                <i class="bi bi-person me-1"></i>Owner: {{ p.owner.name if p.owner else 'Team' }}
+              </span>
+              <span>
+                <i class="bi bi-people me-1"></i>{{ p.members|length }} members
+              </span>
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center">
+              <span class="text-muted small">
+                <i class="bi bi-calendar-event me-1"></i>
+                <span class="text-muted">{{ p.start_date or '' }} {{ '- ' ~ p.end_date if p.end_date }}</span>
+              </span>
+              <a href="{{ url_for('projects.show_project', project_id=p.id) }}" 
+                 class="btn btn-sm btn-outline-primary py-1 px-3">
+                Open <i class="bi bi-arrow-right ms-1"></i>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
 {% else %}
-<p class="text-muted">You are not part of any project yet.</p>
+  <!-- Empty State Onboarding Canvas -->
+  <div class="zp-empty-state-canvas zp-reveal">
+    <div class="zp-empty-icon-ring purple">
+      <i class="bi bi-folder2-open"></i>
+    </div>
+    <h2 class="zp-empty-title">No projects available</h2>
+    <p class="zp-empty-lead">
+      You are not part of any project yet. Create your team's first project to start organizing tasks, sprint deadlines, and team members.
+    </p>
+
+    <!-- 3-Step Quick Guide Cards -->
+    <div class="zp-onboarding-steps">
+      <div class="zp-step-card">
+        <div class="zp-step-num purple">1</div>
+        <div class="zp-step-title">Name Your Project</div>
+        <p class="zp-step-desc">Give your sprint workspace a clear name, objectives, and scope.</p>
+      </div>
+      <div class="zp-step-card">
+        <div class="zp-step-num">2</div>
+        <div class="zp-step-title">Set Sprint Dates</div>
+        <p class="zp-step-desc">Establish realistic timeline milestones to auto-calculate completion velocity.</p>
+      </div>
+      <div class="zp-step-card">
+        <div class="zp-step-num green">3</div>
+        <div class="zp-step-title">Invite Members</div>
+        <p class="zp-step-desc">Add team members to execute, review, and mark tasks as done.</p>
+      </div>
+    </div>
+
+    {% if session.get('role') in ('PM', 'Admin') or (g.user and g.user.role in ('PM', 'Admin')) %}
+      <a class="btn-zp-cta" href="{{ url_for('projects.new_project') }}">
+        <i class="bi bi-plus-lg"></i> Create your first project
+      </a>
+    {% endif %}
+  </div>
 {% endif %}
 {% endblock %}

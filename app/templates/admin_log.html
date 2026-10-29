@@ -1,30 +1,101 @@
 {% extends "base.html" %}
 {% block title %}Activity log - Admin{% endblock %}
+
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-3">
-  <h2>Activity log</h2>
+<div class="zp-page-header zp-reveal">
   <div>
+    <h1 class="zp-page-title">
+      <i class="bi bi-journal-text text-warning"></i> Admin Center &bull; Activity Log
+    </h1>
+    <p class="zp-page-subtitle">Security events, role changes, project lifecycles and administrative audits</p>
+  </div>
+  <div class="d-flex gap-2">
     {% if security_only %}
-      <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.activity_log') }}">Show all</a>
+      <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.activity_log') }}">
+        <i class="bi bi-list-ul me-1"></i> Show all
+      </a>
     {% else %}
-      <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.activity_log', security=1) }}">Security events only</a>
+      <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.activity_log', security=1) }}">
+        <i class="bi bi-shield-lock me-1"></i> Security events only
+      </a>
     {% endif %}
-    <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.users') }}">Users</a>
+    <a class="btn btn-outline-primary btn-sm" href="{{ url_for('admin.users') }}">
+      <i class="bi bi-people me-1"></i> Users
+    </a>
   </div>
 </div>
-<table class="table table-sm table-striped">
-  <thead><tr><th>Time (UTC)</th><th>User</th><th>Action</th><th>Entity</th></tr></thead>
-  <tbody>
-  {% for e, user_name in entries %}
-    <tr>
-      <td>{{ e.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</td>
-      <td>{{ user_name or '-' }}</td>
-      <td>{{ e.action }}</td>
-      <td>{{ e.entity or '' }}{% if e.entity_id %} #{{ e.entity_id }}{% endif %}</td>
-    </tr>
-  {% else %}
-    <tr><td colspan="4">No entries yet.</td></tr>
-  {% endfor %}
-  </tbody>
-</table>
+
+<div class="card border shadow-sm overflow-hidden mb-4 zp-reveal">
+  <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
+    <div class="d-flex align-items-center gap-2">
+      <i class="bi bi-clock-history text-primary"></i>
+      <h2 class="h6 fw-bold mb-0 text-dark">
+        Activity log {% if security_only %}<span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle ms-2">Security Events</span>{% endif %}
+      </h2>
+    </div>
+    <span class="badge bg-secondary">{{ entries|length }} logged records</span>
+  </div>
+
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+      <thead class="table-light">
+        <tr>
+          <th style="min-width: 170px;"><i class="bi bi-clock me-1 text-muted"></i> Time (UTC)</th>
+          <th style="min-width: 150px;"><i class="bi bi-person me-1 text-muted"></i> User</th>
+          <th style="min-width: 250px;"><i class="bi bi-activity me-1 text-muted"></i> Action</th>
+          <th style="min-width: 140px;"><i class="bi bi-layers me-1 text-muted"></i> Entity</th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for e, user_name in entries %}
+        <tr>
+          <td class="text-muted font-monospace small">
+            {{ e.created_at.strftime('%Y-%m-%d %H:%M:%S') }}
+          </td>
+          <td>
+            {% if user_name %}
+              <div class="d-flex align-items-center gap-1">
+                <span class="zp-avatar" style="width: 22px; height: 22px; font-size: 0.65rem;">{{ user_name[:1] }}</span>
+                <span class="small fw-medium">{{ user_name }}</span>
+              </div>
+            {% else %}
+              <span class="text-muted small">-</span>
+            {% endif %}
+          </td>
+          <td>
+            {% if 'failed login' in e.action or 'locked' in e.action %}
+              <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-1 me-1">
+                <i class="bi bi-exclamation-octagon-fill me-1"></i>Security
+              </span>
+            {% elif 'role changed' in e.action or 'deactivated' in e.action or 'reactivated' in e.action %}
+              <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle px-2 py-1 me-1">
+                <i class="bi bi-shield-exclamation me-1"></i>Access
+              </span>
+            {% elif 'created' in e.action %}
+              <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1 me-1">
+                <i class="bi bi-plus-circle me-1"></i>Created
+              </span>
+            {% endif %}
+            <span class="fw-medium text-dark">{{ e.action }}</span>
+          </td>
+          <td>
+            {% if e.entity %}
+              <span class="badge bg-light text-secondary border">
+                {{ e.entity }}{% if e.entity_id %} #{{ e.entity_id }}{% endif %}
+              </span>
+            {% endif %}
+          </td>
+        </tr>
+      {% else %}
+        <tr>
+          <td colspan="4" class="text-center py-4 text-muted">
+            <i class="bi bi-journal-x fs-3 d-block mb-1 text-secondary"></i>
+            <span>No entries yet.</span>
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
 {% endblock %}

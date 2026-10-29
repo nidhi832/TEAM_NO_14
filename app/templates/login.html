@@ -1,23 +1,55 @@
 {% extends "base.html" %}
 {% block title %}Log in - MPMS{% endblock %}
+
 {% block content %}
-<div class="row justify-content-center">
-  <div class="col-md-5">
-    <h2 class="mb-3">Log in</h2>
-    <form method="post">
-      <div class="mb-3">
-        <label class="form-label" for="email">Email</label>
-        <input class="form-control" id="email" name="email" type="email"
-               value="{{ email or '' }}" required>
+<div class="row justify-content-center py-4">
+  <div class="col-md-6 col-lg-5 col-xl-4">
+    <div class="zp-auth-card zp-reveal">
+
+      <!-- Brand Logo -->
+      <div class="zp-auth-logo">
+        <div class="zp-logo-boxes zp-auth-logo-boxes mb-2">
+          <div class="zp-logo-box r"></div>
+          <div class="zp-logo-box g"></div>
+          <div class="zp-logo-box b"></div>
+          <div class="zp-logo-box y"></div>
+        </div>
+        <h2 class="zp-auth-title">Welcome back</h2>
+        <p class="zp-auth-subtitle">Log in to your MPMS workspace</p>
       </div>
-      <div class="mb-3">
-        <label class="form-label" for="password">Password</label>
-        <input class="form-control" id="password" name="password"
-               type="password" required>
+
+      <form method="post" autocomplete="on">
+        <div class="mb-3">
+          <label class="form-label" for="email">
+            <i class="bi bi-envelope me-1 text-muted"></i> Email address
+          </label>
+          <input class="form-control" id="email" name="email" type="email"
+                 placeholder="name@company.com" value="{{ email or '' }}" required autofocus>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label mb-1" for="password">
+            <i class="bi bi-lock me-1 text-muted"></i> Password
+          </label>
+          <input class="form-control" id="password" name="password"
+                 type="password" placeholder="Enter your password" required>
+        </div>
+
+        <div class="d-grid mt-4">
+          <button class="btn btn-primary py-2 fw-semibold" type="submit">
+            <i class="bi bi-box-arrow-in-right me-1"></i> Log in
+          </button>
+        </div>
+      </form>
+
+      <div class="text-center mt-4 pt-3 border-top">
+        <span class="text-muted small">Don't have an account yet?</span>
+        <a class="small fw-semibold text-primary ms-1 text-decoration-none" href="{{ url_for('auth.register') }}">
+          Create an account &rarr;
+        </a>
       </div>
-      <button class="btn btn-primary" type="submit">Log in</button>
-      <a class="ms-2" href="{{ url_for('auth.register') }}">Create an account</a>
-    </form>
+
+    </div>
   </div>
 </div>
 {% endblock %}

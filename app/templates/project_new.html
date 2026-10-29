@@ -1,21 +1,73 @@
 {% extends "base.html" %}
 {% block title %}New project - MPMS{% endblock %}
+
 {% block content %}
-<div class="row justify-content-center"><div class="col-md-6">
-  <h1 class="h3 mb-3">New project</h1>
-  <form method="post">
-    <div class="mb-3"><label class="form-label" for="name">Name</label>
-      <input class="form-control" id="name" name="name" value="{{ form.get('name', '') }}" required></div>
-    <div class="mb-3"><label class="form-label" for="description">Description</label>
-      <textarea class="form-control" id="description" name="description" rows="3">{{ form.get('description', '') }}</textarea></div>
-    <div class="row">
-      <div class="col mb-3"><label class="form-label" for="start_date">Start date</label>
-        <input class="form-control" id="start_date" name="start_date" type="date" value="{{ form.get('start_date', '') }}"></div>
-      <div class="col mb-3"><label class="form-label" for="end_date">End date</label>
-        <input class="form-control" id="end_date" name="end_date" type="date" value="{{ form.get('end_date', '') }}"></div>
+<div class="row justify-content-center py-4">
+  <div class="col-lg-7 col-md-9">
+    <div class="card border-0 shadow zp-reveal" style="border-radius: 16px; overflow: hidden;">
+      <!-- Accent Topline -->
+      <div style="height: 4px; background: linear-gradient(90deg, #0052cc 0%, #06b6d4 50%, #10b981 100%);"></div>
+      
+      <div class="card-header bg-white py-4 px-4 d-flex align-items-center gap-3 border-bottom">
+        <div class="zp-header-badge purple" style="width: 42px; height: 42px; font-size: 1.25rem;">
+          <i class="bi bi-folder-plus"></i>
+        </div>
+        <div>
+          <h1 class="h5 fw-bold mb-0 text-dark">Create New Project</h1>
+          <div class="text-muted small">Initialize a new workspace, timeline milestones and sprint goals</div>
+        </div>
+      </div>
+      
+      <div class="card-body p-4 p-md-5">
+        <form method="post">
+          <div class="mb-4">
+            <label class="form-label fw-bold" for="name">
+              <i class="bi bi-tag me-1 text-primary"></i> Project Name <span class="text-danger">*</span>
+            </label>
+            <input class="form-control form-control-lg" id="name" name="name" 
+                   placeholder="e.g. Mobile App Redesign &amp; API Integration" 
+                   value="{{ form.get('name', '') }}" required autofocus
+                   style="font-size: 1rem; border-radius: 8px;">
+          </div>
+
+          <div class="mb-4">
+            <label class="form-label fw-bold" for="description">
+              <i class="bi bi-card-text me-1 text-primary"></i> Project Description
+            </label>
+            <textarea class="form-control" id="description" name="description" rows="4" 
+                      placeholder="Outline project objectives, deliverables, and scope..."
+                      style="border-radius: 8px;">{{ form.get('description', '') }}</textarea>
+            <div class="form-text text-muted">Maximum 5,000 characters.</div>
+          </div>
+
+          <div class="row g-3 mb-4">
+            <div class="col-sm-6">
+              <label class="form-label fw-bold" for="start_date">
+                <i class="bi bi-calendar-event me-1 text-primary"></i> Start Date
+              </label>
+              <input class="form-control" id="start_date" name="start_date" type="date" 
+                     value="{{ form.get('start_date', '') }}" style="border-radius: 8px;">
+            </div>
+            <div class="col-sm-6">
+              <label class="form-label fw-bold" for="end_date">
+                <i class="bi bi-calendar-check me-1 text-primary"></i> End Date
+              </label>
+              <input class="form-control" id="end_date" name="end_date" type="date" 
+                     value="{{ form.get('end_date', '') }}" style="border-radius: 8px;">
+            </div>
+          </div>
+
+          <div class="d-flex align-items-center gap-3 pt-4 border-top">
+            <button class="btn btn-primary px-4 py-2 shadow-sm fw-bold" type="submit">
+              <i class="bi bi-check2-circle me-1"></i> Create project
+            </button>
+            <a class="btn btn-outline-secondary px-4 py-2" href="{{ url_for('projects.list_projects') }}">
+              Cancel
+            </a>
+          </div>
+        </form>
+      </div>
     </div>
-    <button class="btn btn-primary" type="submit">Create project</button>
-    <a class="ms-2" href="{{ url_for('projects.list_projects') }}">Cancel</a>
-  </form>
-</div></div>
+  </div>
+</div>
 {% endblock %}

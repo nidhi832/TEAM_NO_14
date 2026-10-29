@@ -1,8 +1,79 @@
 {% extends "base.html" %}
 {% from "_tasks.html" import task_table with context %}
 {% block title %}My Tasks - MPMS{% endblock %}
+
 {% block content %}
-<h1 class="h3 mb-3">My Tasks</h1>
-<p class="text-muted">Sorted by due date.</p>
-{{ task_table(tasks, overdue_ids, statuses, url_for('tasks.my_tasks'), show_project=True) }}
+<div class="zp-page-header zp-reveal">
+  <div class="d-flex align-items-center gap-3">
+    <div class="zp-header-badge green">
+      <i class="bi bi-check2-circle"></i>
+    </div>
+    <div>
+      <h1 class="zp-page-title mb-0">My Tasks</h1>
+      <p class="zp-page-subtitle">Tasks assigned to you across all projects &bull; <span class="text-muted">Sorted by due date</span></p>
+    </div>
+  </div>
+  <div>
+    <span class="badge bg-primary fs-6 px-3 py-2">
+      <i class="bi bi-card-checklist me-1"></i> {{ tasks|length }} Assigned
+    </span>
+  </div>
+</div>
+
+{% if tasks %}
+  <!-- Overview Summary Pills -->
+  {% set my_overdue = tasks | selectattr('id', 'in', overdue_ids) | list | length %}
+  <div class="d-flex flex-wrap gap-2 mb-3 zp-reveal">
+    <span class="badge bg-secondary px-3 py-2">
+      <i class="bi bi-list-task me-1"></i> Total Tasks: {{ tasks|length }}
+    </span>
+    {% if my_overdue > 0 %}
+      <span class="badge bg-danger px-3 py-2">
+        <i class="bi bi-exclamation-octagon me-1"></i> {{ my_overdue }} Action Required (Overdue)
+      </span>
+    {% else %}
+      <span class="badge bg-success px-3 py-2">
+        <i class="bi bi-check-circle me-1"></i> All deadlines on schedule
+      </span>
+    {% endif %}
+  </div>
+
+  {{ task_table(tasks, overdue_ids, statuses, url_for('tasks.my_tasks'), show_project=True) }}
+
+{% else %}
+  <!-- Empty State Canvas -->
+  <div class="zp-empty-state-canvas zp-reveal">
+    <div class="zp-empty-icon-ring green">
+      <i class="bi bi-check2-all"></i>
+    </div>
+    <h2 class="zp-empty-title">You are all caught up!</h2>
+    <p class="zp-empty-lead">
+      There are no pending tasks currently assigned to your account. Enjoy your focused sprint time, check active project workspaces, or pick up backlog tasks.
+    </p>
+
+    <!-- Quick Productivity Pills -->
+    <div class="d-flex flex-wrap justify-content-center gap-2 mb-4">
+      <span class="badge bg-light text-secondary border px-3 py-2">
+        <i class="bi bi-shield-check text-success me-1"></i> Zero Overdue Items
+      </span>
+      <span class="badge bg-light text-secondary border px-3 py-2">
+        <i class="bi bi-lightning-charge text-warning me-1"></i> Sprint Velocity Aligned
+      </span>
+      <span class="badge bg-light text-secondary border px-3 py-2">
+        <i class="bi bi-check2-circle text-primary me-1"></i> Backlog Clear
+      </span>
+    </div>
+
+    <div class="d-flex justify-content-center gap-3">
+      <a class="btn btn-outline-primary px-4 py-2" href="{{ url_for('projects.list_projects') }}">
+        <i class="bi bi-folder2-open me-1"></i> Browse Projects
+      </a>
+      {% if session.get('role') in ('PM', 'Admin') %}
+        <a class="btn-zp-cta" href="{{ url_for('projects.new_project') }}">
+          <i class="bi bi-plus-lg"></i> New project
+        </a>
+      {% endif %}
+    </div>
+  </div>
+{% endif %}
 {% endblock %}
