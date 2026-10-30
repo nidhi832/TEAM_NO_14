@@ -51,7 +51,7 @@ def new_project():
         db.session.flush()
         log_event("project created", "Project", project.id)
         db.session.commit()
-        flash("Project created.", "success")
+        flash("Project created. Next, add your first task below.", "success")
         return redirect(url_for("projects.show_project", project_id=project.id))
 
     return render_template("project_new.html", form={})
