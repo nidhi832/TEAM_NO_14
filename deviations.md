@@ -32,11 +32,12 @@ happened and where it is recorded. The updated documents are **SRS v2.0** and
 
 | # | Planned | What we did | Why |
 |---|---|---|---|
-| T1 | Test case IDs like TC-Auth-01 | Each requirement is verified by a named **automated test file** (136 tests, run in CI on every PR); manual cases in `docs/testing/test-cases.md` | Automated tests run on every change |
+| T1 | Test case IDs like TC-Auth-01 | Each requirement is verified by a named **automated test file** (141 tests, run in CI on every PR); manual cases in `docs/testing/test-cases.md` | Automated tests run on every change |
 | T2 | Load test with 50 users | Two modes: **realistic** (1-3 s think time) and **burst** (no pauses) - both PASS (p95 0.30 s / 1.97 s) | Burst is a stricter stress test; see `docs/testing/performance-report.md` |
 | T3 | Availability over a test month | Measured for **30 minutes (180 checks, 100%)**, outside working hours | Short project timeline; method and limits in `docs/testing/uptime-report.md` |
-| T4 | Usability test with 5 users | Protocol ready; **user test in progress** (BL-31, PR #71) | Done last, after the UI redesign |
-| T5 | Browser check on 3 browsers x 3 sizes | Responsive layout built; recorded check **pending** (BL-32) | - |
+| T4 | Usability test with 5 users | Protocol and first-time user guidance merged (BL-31, PR #71); **5-user test not yet run** | Done last, after the UI redesign |
+| T5 | Browser check on Chrome, Firefox and Edge x 3 sizes | Checked on **Chrome and Edge** at 360 / 768 / 1920 px - PASS (30-10-2026); **Firefox not tested** | Firefox was not installed on the team laptops |
+| T6 | Test Plan written at project start | Test Plan document **completed during Sprint 2** | Sprint 1 test cases (BL-44 to 46) were already written from the SRS acceptance criteria, so testing followed the plan's approach from the start |
 
 ## 4. Process and work allocation
 
@@ -49,6 +50,6 @@ happened and where it is recorded. The updated documents are **SRS v2.0** and
 
 ## 5. Still open at development freeze (30 Oct)
 
-- BL-31 usability test with 5 users (PR #71)
-- BL-32 recorded cross-browser check
+- BL-31 usability test with 5 users (protocol ready)
+- BL-32 Firefox check (Chrome and Edge done)
 - Known gaps listed in SAD 4.6: CSRF tokens on forms, `SECRET_KEY` from an environment variable, production WSGI server
