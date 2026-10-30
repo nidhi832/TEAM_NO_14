@@ -52,8 +52,11 @@
           </label>
           <select class="form-select" id="role" name="role">
             <option value="Team Member" {{ 'selected' if role != 'PM' }}>Team Member (Execute &amp; update tasks)</option>
-            <option value="PM" {{ 'selected' if role == 'PM' }}>Project Manager (Create &amp; lead projects)</option>
+            <option value="PM" {{ 'selected' if role == 'PM' }}>Project Manager (Create projects &amp; assign tasks)</option>
           </select>
+          <div class="form-text mt-1 text-muted" id="role-help">
+            Choose <strong>Project Manager</strong> if you will create projects and assign tasks.
+          </div>
         </div>
 
         <div class="d-grid mt-4">

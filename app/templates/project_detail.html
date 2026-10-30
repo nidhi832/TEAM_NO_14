@@ -110,6 +110,16 @@
       <span class="badge bg-secondary">{{ tasks|length }} tasks</span>
     </div>
 
+    {% if can_manage and not tasks %}
+    <div class="alert alert-info d-flex align-items-center gap-2" role="status" id="next-step-hint">
+      <i class="bi bi-lightbulb-fill"></i>
+      <div>
+        <strong>Next step:</strong> add your first task and choose who is responsible for it.
+        <a class="alert-link" href="#add-task-section">Add a task</a>
+      </div>
+    </div>
+    {% endif %}
+
     <!-- Reusable Task Table Component -->
     {{ task_table(tasks, overdue_ids, statuses, url_for('projects.show_project', project_id=project.id), members=project.members, can_manage=can_manage) }}
 
@@ -150,6 +160,13 @@
                 <option value="{{ m.id }}">{{ m.name }}</option>
               {% endfor %}
             </select>
+            <div class="form-text" id="assignee-help">
+              {% if project.members|length == 1 %}
+                Only you are in this project so far. Assign the task to yourself, or add teammates by email in the Members panel.
+              {% else %}
+                Only project members can be assigned.
+              {% endif %}
+            </div>
           </div>
           <div class="col-12 text-end pt-2">
             <button class="btn btn-primary px-4 shadow-sm" type="submit">
